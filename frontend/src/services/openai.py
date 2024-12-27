@@ -1,6 +1,7 @@
 from openai import OpenAI
 import streamlit as st
-from .prompts import SYSTEM
+
+SYSTEM = ""
 
 OPENAI_API_KEY = st.secrets["OPENAI"]["OPENAI_API_KEY"]
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
