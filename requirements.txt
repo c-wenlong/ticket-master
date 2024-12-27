@@ -3,3 +3,4 @@ qdrant-client
 streamlit
 openai
 pathlib
+pytest
