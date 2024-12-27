@@ -1,0 +1,5 @@
+python-dotenv
+qdrant-client
+streamlit
+openai
+pathlib

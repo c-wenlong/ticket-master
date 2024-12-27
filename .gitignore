@@ -1,0 +1,6 @@
+.others/
+myvenv/
+.DS_Store
+.env
+**/__pycache__/
+.sandbox/
