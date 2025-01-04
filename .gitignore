@@ -3,4 +3,6 @@ myvenv/
 .DS_Store
 .env
 **/__pycache__/
+
+# All your test files
 .sandbox/
