@@ -52,12 +52,12 @@ pip install -r requirements.txt
 
 1. Create a `.streamlit` directory in your project root:
 ```bash
-mkdir .streamlit
+mkdir frontend/.streamlit
 ```
 
 2. Create a `secrets.toml` file inside the `.streamlit` directory:
 ```bash
-touch .streamlit/secrets.toml
+touch frontend/.streamlit/secrets.toml
 ```
 
 3. Add your configuration secrets to `secrets.toml`, you can use `.streamlit.secrets.example.toml` file as an example:
