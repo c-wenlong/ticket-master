@@ -3,12 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional, Callable
 from enum import Enum
-
-
-class Priority(str, Enum):
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
+from entities import Priority
 
 
 @dataclass
