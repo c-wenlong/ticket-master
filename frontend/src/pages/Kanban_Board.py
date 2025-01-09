@@ -1,11 +1,12 @@
 import streamlit as st
 from components import KanbanBoard
-
+from utils import get_sample_tickets
 
 st.set_page_config(page_title="Sprint Kanban Board", layout="wide")
 
 # Initialize and render Kanban board
-board = KanbanBoard()
+tickets = get_sample_tickets()
+board = KanbanBoard(tickets)
 board.render()
 
 

@@ -4,3 +4,5 @@ streamlit
 openai
 pathlib
 pytest
+plotly
+pydantic

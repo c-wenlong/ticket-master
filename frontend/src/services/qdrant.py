@@ -1,7 +1,7 @@
 import streamlit as st
 from qdrant_client import QdrantClient, models
 from .openai import text_to_embedding
-from .file_manager import read_json
+from ..utils.file_manager import read_json
 
 QDRANT_URL = st.secrets["QDRANT"]["QDRANT_URL"]
 QDRANT_API_KEY = st.secrets["QDRANT"]["QDRANT_API_KEY"]
@@ -38,13 +38,13 @@ def initialise_vectordb(collection_name, qdrant_client):
     for session_name, session_data in sessions.items():
         # Convert session data to string for embedding
         session_text = f"""
-    Category: {session_data['category']}
-    Keywords: {', '.join(session_data['keywords'])}
-    Summary: {session_data['summary']}
-    Target Audience: {session_data['intended_target_audience']['demographic']}
-    Interests: {', '.join(session_data['intended_target_audience']['interests'])}
-    Preferences: {', '.join(session_data['intended_target_audience']['preferences'])}
-    """
+            Category: {session_data['category']}
+            Keywords: {', '.join(session_data['keywords'])}
+            Summary: {session_data['summary']}
+            Target Audience: {session_data['intended_target_audience']['demographic']}
+            Interests: {', '.join(session_data['intended_target_audience']['interests'])}
+            Preferences: {', '.join(session_data['intended_target_audience']['preferences'])}
+            """
 
         # Get embedding
         embedding = text_to_embedding(session_text)

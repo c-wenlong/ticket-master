@@ -1,8 +1,7 @@
 .others/
-myvenv/
 .DS_Store
 .env
 **/__pycache__/
-
+.venv/
 # All your test files
 .sandbox/

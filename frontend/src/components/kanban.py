@@ -1,18 +1,19 @@
+from typing import Any, Dict
 import streamlit as st
 from datetime import datetime, timezone
-from enum import Enum
 from uuid import uuid4
-from entities import Status, Priority, Type
+from entities import Ticket, Status, Priority, Type
+from .card import KanbanCard
 
 
 class KanbanBoard:
-    def __init__(self):
+    def __init__(self, tickets):
         # Initialize columns using Status enum
         self.columns = [status.value for status in Status]
 
         # Initialize session state for tickets if not exists
         if "tickets" not in st.session_state:
-            st.session_state.tickets = self.get_sample_tickets()
+            st.session_state.tickets = tickets
 
         if "dragging" not in st.session_state:
             st.session_state.dragging = None
@@ -23,84 +24,54 @@ class KanbanBoard:
             Priority.LOW.value: "#6bff6b",  # Green for low priority
         }
 
-    def get_sample_tickets(self):
-        """Generate sample ticket data matching the Pydantic schema."""
+    def unpack_ticket(ticket: Ticket) -> Dict[str, Any]:
+        """
+        Converts a Ticket model into a dictionary format suitable for the Kanban board.
+        """
         return {
-            "TICKET-A95216E6": {
-                "id": "TICKET-A95216E6",
-                "title": "Implement Login",
-                "description": "Add login functionality to the app",
-                "type": Type.FEATURE.value,
-                "status": Status.OPEN.value,
-                "priority": Priority.HIGH.value,
-                "assignee_id": "kai",
-                "reporter_id": "ryan",
-                "embedding": None,
-                "parent_ticket_id": None,
-                "labels": ["auth", "frontend"],
-            },
-            "TICKET-46BD8794": {
-                "id": "TICKET-46BD8794",
-                "title": "Database Setup",
-                "description": "Set up database for the project",
-                "type": Type.TASK.value,
-                "status": Status.IN_PROGRESS.value,
-                "priority": Priority.MEDIUM.value,
-                "assignee_id": "kai",
-                "reporter_id": "avellin",
-                "created_at": datetime.now(timezone.utc),
-                "updated_at": datetime.now(timezone.utc),
-                "embedding": None,
-                "parent_ticket_id": None,
-                "labels": ["database", "backend"],
-            },
+            "id": ticket.id,
+            "title": ticket.title,
+            "description": ticket.description,
+            "type": ticket.type.value,
+            "status": ticket.status.value,
+            "priority": ticket.priority.value,
+            "assignee_id": ticket.assignee_id,
+            "reporter_id": ticket.reporter_id,
+            "created_at": ticket.created_at,
+            "updated_at": ticket.updated_at,
+            "embedding": ticket.embedding,
+            "parent_ticket_id": ticket.parent_ticket_id,
+            "labels": ticket.labels,
         }
 
-    def create_ticket_card(self, ticket, column):
+    def create_ticket_card(self, ticket_data, column):
         """Create a visual card for a ticket."""
         card = st.container()
 
         with card:
-            # Card header with background color based on priority
-            labels_str = " ".join([f"#{label}" for label in ticket["labels"]])
-            assignee_display = (
-                ticket["assignee_id"] if ticket["assignee_id"] else "Not Assigned"
+            # Convert ticket data to KanbanCard instance
+            card = KanbanCard(
+                ticket_id=ticket_data["id"],
+                title=ticket_data["title"],
+                description=ticket_data["description"],
+                ticket_type=ticket_data["type"],
+                priority=ticket_data["priority"],
+                status=ticket_data["status"],
+                assignee_id=ticket_data["assignee_id"],
+                reporter_id=ticket_data["reporter_id"],
+                labels=ticket_data["labels"],
+                created_at=ticket_data.get("created_at"),
+                updated_at=ticket_data.get("updated_at"),
+                parent_ticket_id=ticket_data.get("parent_ticket_id"),
+                embedding=ticket_data.get("embedding"),
             )
 
-            st.markdown(
-                f"""
-                <div style="
-                    background-color: {self.ticket_colors[ticket['priority']]};
-                    padding: 10px;
-                    border-radius: 5px;
-                    margin: 5px 0;
-                    opacity: 0.9;
-                ">
-                    <div style="color: black;">
-                        <strong>{ticket['id']}</strong>: {ticket['title']}
-                        <br>
-                        📝 {ticket['type']} | 👤 {ticket['reporter_id']}  ➜  👤 {assignee_display}
-                        <br>
-                        <small>{labels_str}</small>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
+            # Render the card with proper column information
+            card.render(
+                current_column=column,
+                available_columns=self.columns,
+                on_move=self.move_ticket,
             )
-
-            # Add move buttons
-            cols = st.columns(len(self.columns))
-            current_col_idx = self.columns.index(column)
-
-            # Show move left button if not first column
-            if current_col_idx > 0:
-                if cols[0].button("←", key=f'left_{ticket["id"]}'):
-                    self.move_ticket(ticket["id"], self.columns[current_col_idx - 1])
-
-            # Show move right button if not last column
-            if current_col_idx < len(self.columns) - 1:
-                if cols[-1].button("→", key=f'right_{ticket["id"]}'):
-                    self.move_ticket(ticket["id"], self.columns[current_col_idx + 1])
 
     def move_ticket(self, ticket_id: str, new_status: str):
         """Move a ticket to a new status column."""
@@ -185,7 +156,9 @@ class KanbanBoard:
             with col:
                 status_tickets = [t for t in filtered_tickets if t["status"] == status]
                 for ticket in status_tickets:
-                    self.create_ticket_card(ticket, status)
+                    self.create_ticket_card(
+                        ticket, status
+                    )  # Pass both ticket and current status
 
                 # Add "Add Ticket" button at bottom of Open column
                 if status == Status.OPEN.value:
