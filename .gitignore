@@ -5,3 +5,4 @@
 .venv/
 # All your test files
 .sandbox/
+*.pem
