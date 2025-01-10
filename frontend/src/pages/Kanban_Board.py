@@ -1,13 +1,16 @@
 import streamlit as st
 from components import KanbanBoard
-from utils import get_sample_tickets
+from utils import SAMPLE_TICKETS
 
 st.set_page_config(page_title="Sprint Kanban Board", layout="wide")
 
+if "show_form" not in st.session_state:
+    st.session_state.show_form = False
+
 # Initialize and render Kanban board
-tickets = get_sample_tickets()
-board = KanbanBoard(tickets)
+board = KanbanBoard(SAMPLE_TICKETS)
 board.render()
+# st.json(st.session_state.tickets)
 
 
 def metrics():

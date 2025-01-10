@@ -7,7 +7,6 @@ st.set_page_config(
     page_icon="🎫",
     page_title="Ticket Master",
 )
-st.title("Welcome to Ticket Master")
 
 curr_user = User(
     id="USER-TESTING",
@@ -16,6 +15,17 @@ curr_user = User(
     role="developer",
 )
 
+
+def initialise_states():
+    if "tickets" not in st.session_state:
+        st.session_state.tickets = []
+    if "show_form" not in st.session_state:
+        st.session_state.show_form = False
+    if "curr_user" not in st.session_state:
+        st.session_state.curr_user = curr_user
+
+
+st.title("Welcome to Ticket Master")
+initialise_states()
 st.markdown("## Current User")
-st.session_state.curr_user = curr_user
 st.json(curr_user)

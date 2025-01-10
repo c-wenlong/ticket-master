@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Dict, Optional
+from entities import Status, Priority, Type
 
 
 class TicketTableManager:
@@ -15,13 +16,11 @@ class TicketTableManager:
             "reporter_id",
             "created_at",
             "updated_at",
-            "semantic_hash",
             "embedding",
-            "is_processed",
         }
 
         # Fields only editable by admins
-        self.admin_only_fields = {"duplicate_ticket_ids", "parent_ticket_id"}
+        self.admin_only_fields = {"parent_ticket_id"}
 
         # Fields editable by ticket assignee
         self.assignee_fields = {"status", "description"}
@@ -61,31 +60,38 @@ class TicketTableManager:
         columns = [
             "id",
             "title",
+            "type",
             "status",
             "priority",
             "assignee_id",
+            "reporter_id",
             "description",
             "labels",
             "created_at",
             "updated_at",
+            "parent_ticket_id",
         ]
         df = df[columns]
 
         # Create expandable container for each ticket
         for idx, ticket in df.iterrows():
-            with st.expander(f"🎫 {ticket['title']} ({ticket['id']})"):
+            with st.expander(
+                f"🎫 {ticket['title']} ({ticket['id']}) - {ticket['type']}",
+                expanded=False,
+            ):
                 self._display_ticket_fields(ticket, idx)
 
     def _display_ticket_fields(self, ticket: pd.Series, idx: int):
         """Display and handle editing for individual ticket fields."""
-
         # Create columns for better layout
         col1, col2 = st.columns([2, 1])
 
         with col1:
             # Title and Description
             if self.can_edit_field("title", ticket.get("assignee_id")):
-                new_title = st.text_input("Title", ticket["title"], key=f"title_{idx}")
+                new_title = st.text_input(
+                    "Title", ticket["title"], key=f"title_{idx}", max_chars=100
+                )
                 if new_title != ticket["title"]:
                     self._handle_field_update(ticket["id"], "title", new_title)
 
@@ -98,12 +104,24 @@ class TicketTableManager:
                 st.write(ticket["description"])
 
         with col2:
-            # Status and Priority
+            # Type, Status and Priority
+            if self.can_edit_field("type", ticket.get("assignee_id")):
+                new_type = st.selectbox(
+                    "Type",
+                    options=[t.value for t in Type],
+                    index=[t.value for t in Type].index(ticket["type"]),
+                    key=f"type_{idx}",
+                )
+                if new_type != ticket["type"]:
+                    self._handle_field_update(ticket["id"], "type", new_type)
+            else:
+                st.write(f"Type: {ticket['type']}")
+
             if self.can_edit_field("status", ticket.get("assignee_id")):
                 new_status = st.selectbox(
                     "Status",
-                    options=["open", "in-progress", "done"],
-                    index=["open", "in-progress", "done"].index(ticket["status"]),
+                    options=[s.value for s in Status],
+                    index=[s.value for s in Status].index(ticket["status"]),
                     key=f"status_{idx}",
                 )
                 if new_status != ticket["status"]:
@@ -114,8 +132,8 @@ class TicketTableManager:
             if self.can_edit_field("priority", ticket.get("assignee_id")):
                 new_priority = st.selectbox(
                     "Priority",
-                    options=["high", "medium", "low"],
-                    index=["high", "medium", "low"].index(ticket["priority"]),
+                    options=[p.value for p in Priority],
+                    index=[p.value for p in Priority].index(ticket["priority"]),
                     key=f"priority_{idx}",
                 )
                 if new_priority != ticket["priority"]:
@@ -123,18 +141,67 @@ class TicketTableManager:
             else:
                 st.write(f"Priority: {ticket['priority']}")
 
+            # Assignment
+            if self.can_edit_field("assignee_id", ticket.get("assignee_id")):
+                new_assignee = st.text_input(
+                    "Assignee",
+                    value=ticket.get("assignee_id", ""),
+                    key=f"assignee_{idx}",
+                )
+                if new_assignee != ticket.get("assignee_id"):
+                    self._handle_field_update(ticket["id"], "assignee_id", new_assignee)
+            else:
+                st.write(f"Assignee: {ticket.get('assignee_id', 'Unassigned')}")
+
         # Labels (shown as tags)
-        if isinstance(ticket["labels"], list):
-            st.write("Labels:", ", ".join(ticket["labels"]))
+        if self.can_edit_field("labels", ticket.get("assignee_id")):
+            current_labels = (
+                ", ".join(ticket["labels"])
+                if isinstance(ticket["labels"], list)
+                else ""
+            )
+            new_labels = st.text_input(
+                "Labels (comma-separated)", value=current_labels, key=f"labels_{idx}"
+            )
+            new_labels_list = [
+                label.strip() for label in new_labels.split(",") if label.strip()
+            ]
+            if new_labels_list != ticket["labels"]:
+                self._handle_field_update(ticket["id"], "labels", new_labels_list)
+        else:
+            st.write(
+                "Labels:",
+                (
+                    ", ".join(ticket["labels"])
+                    if isinstance(ticket["labels"], list)
+                    else ""
+                ),
+            )
+
+        # Parent ticket (admin only)
+        if self.is_admin:
+            new_parent = st.text_input(
+                "Parent Ticket ID",
+                value=ticket.get("parent_ticket_id", ""),
+                key=f"parent_{idx}",
+            )
+            if new_parent != ticket.get("parent_ticket_id"):
+                self._handle_field_update(ticket["id"], "parent_ticket_id", new_parent)
 
         # Metadata row
         meta_col1, meta_col2, meta_col3 = st.columns(3)
         with meta_col1:
-            st.write(f"Created: {ticket['created_at'].strftime('%Y-%m-%d %H:%M')}")
+            created_at = ticket["created_at"]
+            if isinstance(created_at, str):
+                created_at = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+            st.write(f"Created: {created_at.strftime('%Y-%m-%d %H:%M')}")
         with meta_col2:
-            st.write(f"Updated: {ticket['updated_at'].strftime('%Y-%m-%d %H:%M')}")
+            updated_at = ticket["updated_at"]
+            if isinstance(updated_at, str):
+                updated_at = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
+            st.write(f"Updated: {updated_at.strftime('%Y-%m-%d %H:%M')}")
         with meta_col3:
-            st.write(f"Assignee: {ticket.get('assignee_id', 'Unassigned')}")
+            st.write(f"Reporter: {ticket['reporter_id']}")
 
     def _handle_field_update(self, ticket_id: str, field: str, new_value: any):
         """Handle updates to ticket fields."""
@@ -142,63 +209,9 @@ class TicketTableManager:
             st.session_state.edited_values[ticket_id] = {}
 
         st.session_state.edited_values[ticket_id][field] = new_value
+        st.session_state.edited_values[ticket_id]["updated_at"] = datetime.now(
+            timezone.utc
+        )
 
         # In a real application, you would update the database here
         st.write(f"Field '{field}' updated for ticket {ticket_id}")
-
-
-def main():
-    st.set_page_config(page_title="Ticket Table", page_icon="🎫", layout="wide")
-
-    # Sample data
-    sample_tickets = [
-        {
-            "id": "TICK-001",
-            "title": "Implement Login",
-            "description": "Create login page with OAuth",
-            "status": "open",
-            "priority": "high",
-            "assignee_id": "USER-1",
-            "reporter_id": "USER-2",
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
-            "labels": ["frontend", "auth"],
-            "is_processed": True,
-        },
-        {
-            "id": "TICK-002",
-            "title": "Database Backup",
-            "description": "Setup automated backups",
-            "status": "in-progress",
-            "priority": "medium",
-            "assignee_id": "USER-2",
-            "reporter_id": "USER-1",
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
-            "labels": ["backend", "ops"],
-            "is_processed": True,
-        },
-    ]
-
-    # Initialize table manager
-    current_user_id = "USER-1"  # In real app, get from authentication
-    is_admin = True  # In real app, get from user roles
-    table_manager = TicketTableManager(current_user_id, is_admin)
-
-    # Display table
-    st.title("Ticket Management")
-    table_manager.display_table(sample_tickets)
-
-    # Show pending changes
-    if st.session_state.get("edited_values"):
-        st.write("Pending Changes:")
-        st.json(st.session_state.edited_values)
-
-        if st.button("Save Changes"):
-            # In a real application, you would save to database here
-            st.success("Changes saved!")
-            st.session_state.edited_values = {}
-
-
-if __name__ == "__main__":
-    main()

@@ -1,9 +1,7 @@
 import streamlit as st
 from utils import read_json
-from components import TicketTableManager
-
-
-st.set_page_config(page_title="All Tickets", page_icon="🎫", layout="wide")
+from components import ticket_table
+from utils import SAMPLE_TICKETS
 
 
 def load_sample_data():
@@ -44,17 +42,11 @@ def main():
         st.write("Admin Status:", "✅" if st.session_state.is_admin else "❌")
 
     # Load sample data
-    tickets = load_sample_data()
+    tickets = SAMPLE_TICKETS
 
     if not tickets:
         st.warning("No tickets found in sample data.")
         return
-
-    # Initialize table manager with current user context
-    table_manager = TicketTableManager(
-        current_user_id=st.session_state.current_user,
-        is_admin=st.session_state.is_admin,
-    )
 
     # Display ticket statistics
     col1, col2, col3, col4 = st.columns(4)
@@ -105,7 +97,7 @@ def main():
         ]
 
     # Display table
-    table_manager.display_table(filtered_tickets)
+    ticket_table(filtered_tickets)
 
     # Handle pending changes
     if st.session_state.get("edited_values"):

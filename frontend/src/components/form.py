@@ -1,38 +1,19 @@
 import streamlit as st
 from datetime import datetime, timezone
-from typing import Optional
-from enum import Enum
-from entities import Ticket
-
-
-class Type(str, Enum):
-    BUG = "bug"
-    FEATURE = "feature"
-    TASK = "task"
-
-
-class Status(str, Enum):
-    OPEN = "open"
-    IN_PROGRESS = "in-progress"
-    DONE = "done"
-
-
-class Priority(str, Enum):
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
+from entities import Ticket, Type, Status, Priority
+import time
 
 
 def fetch_assignees():  #!TODO ONCE ENDPOINT IS DONE TO FETCH USER DATA
     return ["", "Avellin", "Kai", "Ryan", "Xiaoyun"]
 
 
-def create_ticket_form(current_user_id: str) -> Optional[dict]:
+def create_ticket_form(current_user_id: str) -> Ticket:
     """
     Creates a Streamlit form for ticket creation that matches the Pydantic schema.
     Returns the ticket data if form is submitted, None otherwise.
     """
-    with st.form("ticket_creation_form"):
+    with st.form("create_ticket_form"):
         st.header("Create New Ticket")
 
         # Core Fields
@@ -116,31 +97,32 @@ def create_ticket_form(current_user_id: str) -> Optional[dict]:
             current_time = datetime.now(timezone.utc)
 
             # Create ticket data matching Pydantic schema
-            ticket_data = {
-                "title": title.strip(),
-                "description": description.strip(),
-                "type": ticket_type,
-                "status": status,
-                "priority": priority,
-                "assignee_id": assignee_id if assignee_id else None,
-                "reporter_id": current_user_id,
-                "created_at": current_time,
-                "updated_at": current_time,
-                "parent_ticket_id": (
-                    parent_ticket_id if parent_ticket_id.strip() else None
-                ),
-                "labels": [
-                    label.strip() for label in labels.split(",") if label.strip()
-                ],
-                "embedding": None,  # AI processing field, initialized as None
-            }
-
             try:
-                validated_ticket = Ticket(**ticket_data)
-            except:
-                st.debug(f"Ticket validation failed with {ticket_data}")
+                new_ticket = Ticket(
+                    title=title.strip(),
+                    description=description.strip(),
+                    type=Type(ticket_type),
+                    status=Status(status),
+                    priority=Priority(priority),
+                    assignee_id=assignee_id if assignee_id != "Unassigned" else None,
+                    reporter_id=current_user_id,
+                    created_at=current_time,
+                    updated_at=current_time,
+                    parent_ticket_id=parent_ticket_id.strip() or None,
+                    labels=[
+                        label.strip() for label in labels.split(",") if label.strip()
+                    ],
+                    embedding=None,
+                )
+                st.session_state.tickets.append(new_ticket)
+                st.session_state.show_form = (
+                    False  # Hide form after successful submission
+                )
+                st.toast("Ticket created successfully!", icon="✅")
+                time.sleep(1)
+                st.rerun()
+            except Exception as e:
+                st.error(f"Failed to create ticket: {str(e)}")
                 return None
-
-            return validated_ticket
 
     return None
