@@ -1,7 +1,7 @@
 import { Db, MongoClient } from "mongodb";
 
-let mongoClient: MongoClient | null = null;
-let db: Db | null = null;
+let mongoClient: Optional<MongoClient> = null;
+let db: Optional<Db> = null;
 
 const MustInit = async () => {
   const dbUserName = process.env.DOCUMENTDB_USERNAME;
