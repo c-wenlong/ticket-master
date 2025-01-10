@@ -13,7 +13,7 @@ const MustInit = async () => {
     throw new Error("MongoDB environment variables are not set");
   }
 
-  const uri = `mongodb://${dbUserName}:${dbPassword}@${dbHost}:${dbPort}/?tls=true&tlsCAFile=global-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`;
+  const uri = `mongodb://${dbUserName}:${encodeURIComponent(dbPassword)}@${dbHost}:${dbPort}/?tls=true&tlsCAFile=global-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`;
 
   mongoClient = new MongoClient(uri);
   await mongoClient.connect();

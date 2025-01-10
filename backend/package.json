@@ -1,17 +1,21 @@
 {
   "name": "backend",
-  "type": "module",
   "scripts": {
-    "build": "esbuild --bundle --outfile=./dist/index.js --platform=node --target=node20 ./src/main.ts",
+    "build": "rspack build --node-env development",
+    "build:prod": "rspack build --node-env production",
+    "start": "NODE_ENV=development node dist/index.js",
     "zip": "zip -j lambda.zip dist/index.js",
     "update": "aws lambda update-function-code --zip-file fileb://lambda.zip --function-name hello",
     "deploy": "run-s build zip update"
   },
   "devDependencies": {
+    "@rspack/cli": "^1.1.8",
+    "@rspack/core": "^1.1.8",
     "@types/node": "^22.10.5",
     "dotenv": "^16.4.7",
-    "esbuild": "^0.21.4",
-    "npm-run-all2": "^6.2.0"
+    "npm-run-all2": "^6.2.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.7.3"
   },
   "dependencies": {
     "hono": "^4.6.16",
