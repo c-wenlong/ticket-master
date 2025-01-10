@@ -1,6 +1,8 @@
-from typing import List, Optional
+from typing import List
 import streamlit as st
 from datetime import datetime, timezone
+import time
+
 from entities import Ticket, Status, Priority, Type
 from .card import KanbanCard
 from .form import create_ticket_form
@@ -53,6 +55,7 @@ class KanbanBoard:
                 current_column=column,
                 available_columns=self.columns,
                 on_move=self.move_ticket,
+                on_delete=self.delete_ticket,
             )
 
     def move_ticket(self, ticket_id: str, new_status: str):
@@ -71,6 +74,26 @@ class KanbanBoard:
                 # Replace the old ticket with updated one
                 st.session_state.tickets[i] = updated_ticket
                 st.rerun()
+
+    def delete_ticket(self, ticket_id: str):
+        """Delete a ticket from the board."""
+        # Find the ticket in the list
+        for i, ticket in enumerate(st.session_state.tickets):
+            if ticket.id == ticket_id:
+                # Create a temp container for the toast
+                toast_container = st.empty()
+
+                # Remove the ticket
+                st.session_state.tickets.pop(i)
+
+                # Show success toast
+                with toast_container:
+                    st.toast(f"Ticket {ticket_id} deleted successfully", icon="🗑️")
+
+                # Rerun to update the UI
+                time.sleep(0.5)  # Small delay to show the toast
+                st.rerun()
+                break
 
     def render(self):
         """Render the Kanban board."""

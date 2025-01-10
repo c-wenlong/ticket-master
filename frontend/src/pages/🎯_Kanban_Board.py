@@ -2,7 +2,9 @@ import streamlit as st
 from components import KanbanBoard
 from utils import SAMPLE_TICKETS
 
-st.set_page_config(page_title="Sprint Kanban Board", layout="wide")
+st.set_page_config(
+    page_title="Sprint Kanban Board", layout="wide", initial_sidebar_state="collapsed", page_icon="🎯"
+)
 
 if "show_form" not in st.session_state:
     st.session_state.show_form = False
