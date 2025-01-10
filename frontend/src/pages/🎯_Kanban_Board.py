@@ -1,13 +1,33 @@
 import streamlit as st
 from components import KanbanBoard
 from utils import SAMPLE_TICKETS
+from entities import User
 
 st.set_page_config(
-    page_title="Sprint Kanban Board", layout="wide", initial_sidebar_state="collapsed", page_icon="🎯"
+    page_title="Sprint Kanban Board",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+    page_icon="🎯",
 )
 
-if "show_form" not in st.session_state:
-    st.session_state.show_form = False
+curr_user = User(
+    id="USER-TESTING",
+    name="Chen Wenlong",
+    email="chenwenlong@u.nus.edu",
+    role="developer",
+)
+
+
+def initialise_states():
+    if "tickets" not in st.session_state:
+        st.session_state.tickets = []
+    if "show_form" not in st.session_state:
+        st.session_state.show_form = False
+    if "curr_user" not in st.session_state:
+        st.session_state.curr_user = curr_user
+
+
+initialise_states()
 
 # Initialize and render Kanban board
 board = KanbanBoard(SAMPLE_TICKETS)

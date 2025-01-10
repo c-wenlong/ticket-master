@@ -1,6 +1,5 @@
 import streamlit as st
 from components import create_ticket_form
-from entities import Ticket
 
 st.set_page_config(page_title="Ticket Management System", page_icon="🎫")
 
