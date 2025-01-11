@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { handle } from "hono/aws-lambda";
 import { logger } from "hono/logger";
 import { loadConfig } from "./config";
+import { errorMiddleware } from "./middleware/error";
 
 const cfg = await loadConfig();
 await mongo.MustInit(cfg);
@@ -11,6 +12,7 @@ await mongo.MustInit(cfg);
 const app = new Hono();
 
 app.use("*", logger());
+app.use("*", errorMiddleware);
 setupRoutes(app);
 
 if (process.env.NODE_ENV !== "production") {
