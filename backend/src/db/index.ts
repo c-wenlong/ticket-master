@@ -1,21 +1,15 @@
+import { AppConfig } from "@/config";
 import { Db, MongoClient } from "mongodb";
 
 let mongoClient: Optional<MongoClient> = null;
 let db: Optional<Db> = null;
 
-const MustInit = async () => {
-  const dbUserName = process.env.DOCUMENTDB_USERNAME;
-  const dbPassword = process.env.DOCUMENTDB_PASSWORD;
-  const dbHost = process.env.DOCUMENTDB_HOSTNAME;
-  const dbPort = process.env.PORT;
-
-  if (!dbUserName || !dbPassword || !dbHost || !dbPort) {
-    throw new Error("MongoDB environment variables are not set");
-  }
-
-  let uri = `mongodb://${dbUserName}:${encodeURIComponent(
-    dbPassword,
-  )}@${dbHost}:${dbPort}/?readPreference=secondaryPreferred&retryWrites=false`;
+const MustInit = async (cfg: AppConfig) => {
+  let uri = `mongodb://${cfg.dbUserName}:${encodeURIComponent(
+    cfg.dbPassword,
+  )}@${cfg.dbHost}:${
+    cfg.dbPort
+  }/?readPreference=secondaryPreferred&retryWrites=false`;
   if (process.env.NODE_ENV === "production") {
     uri += "&tls=true&tlsCAFile=global-bundle.pem&replicaSet=rs0";
   }
@@ -24,7 +18,7 @@ const MustInit = async () => {
   await mongoClient.connect();
   db = mongoClient.db();
 
-  console.log("MongoDB connected");
+  console.info("MongoDB connected");
 };
 
 export default {

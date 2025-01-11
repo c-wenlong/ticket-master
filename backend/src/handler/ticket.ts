@@ -1,78 +1,129 @@
 import mongo from "@/db";
-import { TicketSchema } from "@/schema/ticket";
+import { Ticket, TicketSchema } from "@/schema/ticket";
 import { Hono } from "hono";
 
-export const setupTicketRoutes = (app: Hono) => {
-  app.post("/ticket", async (c) => {
-    const body = await c.req.json();
-    const parseResult = TicketSchema.safeParse(body);
-  
-    if (!parseResult.success) {
-      c.status(400);
-      return c.json({ error: parseResult.error });
-    }
-  
-    const ticket = parseResult.data;
-    await mongo.db.collection("tickets").insertOne(ticket);
-  
-    return c.json({
-      data: ticket,
-      message: "Ticket created",
-    });
-  });
-
-  app.get("/ticket/:id", async (c) => {
-    const id = c.req.param('id');
-    const ticket = await mongo.db.collection("tickets").findOne({ id });
-
-    if (!ticket) {
-      c.status(400);
-      return c.json({
-        error: "Ticket not found",
-      });
-    }
-  
-    return c.json({
-      data: ticket,
-      message: "success",
-    });
-  });
-
-  app.get("/ticket", async (c) => {
-    const tickets = await mongo.db.collection("tickets").find().toArray();
-  
-    return c.json({
-      data: tickets,
-      message: "success",
-    });
-  });
-
-  app.put("/ticket/:id", async (c) => {
-    const id = c.req.param('id');
-    const body = await c.req.json();
-    const parseResult = TicketSchema.safeParse(body);
-  
-    if (!parseResult.success) {
-      c.status(400);
-      return c.json({ error: parseResult.error });
-    }
-  
-    const ticket = parseResult.data;
-    await mongo.db.collection("tickets").updateOne({ id }, { $set: ticket });
-  
-    return c.json({
-      data: ticket,
-      message: "Ticket updated",
-    });
-  });
-
-  app.delete("/ticket/:id", async (c) => {
-    const id = c.req.param('id');
-    await mongo.db.collection("tickets").deleteOne({ id });
-  
-    return c.json({
-      message: "Ticket deleted",
-    });
-  });
+export enum TicketStatusCode {
+  Success = 0,
+  IllegalPayload = 1000,
+  TicketNotFound = 1001,
 }
 
+export const ticketRoutes = new Hono();
+
+ticketRoutes.post("/", async (c) => {
+  const body = await c.req.json();
+  const parseResult = TicketSchema.safeParse(body);
+
+  if (!parseResult.success) {
+    const resp = {
+      base: {
+        code: TicketStatusCode.IllegalPayload,
+        message: "Illegal ticket data",
+        errorMessage: parseResult.error.message,
+      },
+    } satisfies HttpResponse;
+
+    c.status(400);
+    return c.json(resp);
+  }
+
+  const ticket = parseResult.data;
+  await mongo.db.collection("tickets").insertOne(ticket);
+
+  const resp = {
+    base: {
+      code: TicketStatusCode.Success,
+      message: "Ticket created",
+    },
+    data: ticket,
+  } satisfies HttpResponse<Ticket>;
+
+  return c.json(resp);
+});
+
+ticketRoutes.get("/:id", async (c) => {
+  const id = c.req.param("id");
+  const ticket = await mongo.db.collection("tickets").findOne({ id });
+
+  if (!ticket) {
+    const resp = {
+      base: {
+        code: TicketStatusCode.TicketNotFound,
+        message: "Ticket not found",
+      },
+    } satisfies HttpResponse;
+
+    c.status(400);
+    return c.json(resp);
+  }
+
+  const resp = {
+    base: {
+      code: TicketStatusCode.Success,
+      message: "success",
+    },
+    data: ticket,
+  } satisfies HttpResponse;
+
+  return c.json(resp);
+});
+
+ticketRoutes.get("/", async (c) => {
+  const tickets = await mongo.db.collection("tickets").find().toArray();
+
+  const resp = {
+    base: {
+      code: TicketStatusCode.Success,
+      message: "success",
+    },
+    data: tickets,
+  } satisfies HttpResponse;
+
+  return c.json(resp);
+});
+
+ticketRoutes.put("/:id", async (c) => {
+  const id = c.req.param("id");
+  const body = await c.req.json();
+  const parseResult = TicketSchema.safeParse(body);
+
+  if (!parseResult.success) {
+    const resp = {
+      base: {
+        code: TicketStatusCode.IllegalPayload,
+        message: "Illegal ticket data",
+        errorMessage: parseResult.error.message,
+      },
+    } satisfies HttpResponse;
+
+    c.status(400);
+    return c.json(resp);
+  }
+
+  const ticket = parseResult.data;
+  await mongo.db.collection("tickets").updateOne({ id }, { $set: ticket });
+
+  const resp = {
+    base: {
+      code: TicketStatusCode.Success,
+      message: "Ticket updated",
+    },
+    data: ticket,
+  }
+
+  return c.json(resp);
+});
+
+ticketRoutes.delete("/:id", async (c) => {
+  const id = c.req.param("id");
+  await mongo.db.collection("tickets").deleteOne({ id });
+
+  const resp = {
+    base: {
+      code: TicketStatusCode.Success,
+      message: "Ticket deleted",
+    },
+  } satisfies HttpResponse;
+
+  return c.json(resp);
+});
