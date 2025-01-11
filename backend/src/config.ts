@@ -2,6 +2,7 @@ export type AppConfig = {
   dbUserName: string;
   dbPassword: string;
   dbHost: string;
+  dbName: string;
   dbPort: string;
   devHttpPort: number;
 };
@@ -26,6 +27,7 @@ export const loadConfig = async () => {
     dbUserName: process.env.DOCUMENTDB_USERNAME ?? "admin",
     dbPassword: process.env.DOCUMENTDB_PASSWORD ?? "password",
     dbHost: process.env.DOCUMENTDB_HOSTNAME ?? "localhost",
+    dbName: process.env.DOCUMENTDB_DATABASE ?? "ticket_master",
     dbPort: process.env.PORT ?? "27018",
     devHttpPort: Number(process.env.DEV_HTTP_PORT ?? "3000"),
   };
