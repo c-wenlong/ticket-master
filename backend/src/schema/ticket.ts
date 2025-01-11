@@ -6,9 +6,11 @@ export const PrioritySchema = z.enum(["LOW", "MEDIUM", "HIGH"]);
 
 export const TicketTypeSchema = z.enum(["BUG", "FEATURE", "TASK"]);
 
+const ticketTitleRegex = /\[\w+\]\s[A-Z]\w*(\s[A-Z]\w*)*/;
+
 export const TicketSchema = z.object({
   id: z.string(),
-  title: z.string(),
+  title: z.string().refine((title) => ticketTitleRegex.test(title)),
   description: z.string(),
   status: StatusSchema,
   priority: PrioritySchema,
