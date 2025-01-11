@@ -1,8 +1,9 @@
 import mongo from "@/db";
+import { TICKET_COLLECTION } from "@/db/constant";
 import { Ticket, TicketSchema } from "@/schema/ticket";
 import { Hono } from "hono";
 
-export enum TicketStatusCode {
+enum TicketStatusCode {
   Success = 0,
   IllegalPayload = 1000,
   TicketNotFound = 1001,
@@ -28,7 +29,7 @@ ticketRoutes.post("/", async (c) => {
   }
 
   const ticket = parseResult.data;
-  await mongo.db.collection("tickets").insertOne(ticket);
+  await mongo.db.collection(TICKET_COLLECTION).insertOne(ticket);
 
   const resp = {
     base: {
@@ -43,7 +44,7 @@ ticketRoutes.post("/", async (c) => {
 
 ticketRoutes.get("/:id", async (c) => {
   const id = c.req.param("id");
-  const ticket = await mongo.db.collection("tickets").findOne({ id });
+  const ticket = await mongo.db.collection(TICKET_COLLECTION).findOne({ id });
 
   if (!ticket) {
     const resp = {
@@ -69,7 +70,7 @@ ticketRoutes.get("/:id", async (c) => {
 });
 
 ticketRoutes.get("/", async (c) => {
-  const tickets = await mongo.db.collection("tickets").find().toArray();
+  const tickets = await mongo.db.collection(TICKET_COLLECTION).find().toArray();
 
   const resp = {
     base: {
@@ -101,7 +102,9 @@ ticketRoutes.put("/:id", async (c) => {
   }
 
   const ticket = parseResult.data;
-  await mongo.db.collection("tickets").updateOne({ id }, { $set: ticket });
+  await mongo.db
+    .collection(TICKET_COLLECTION)
+    .updateOne({ id }, { $set: ticket });
 
   const resp = {
     base: {
@@ -109,14 +112,14 @@ ticketRoutes.put("/:id", async (c) => {
       message: "Ticket updated",
     },
     data: ticket,
-  }
+  };
 
   return c.json(resp);
 });
 
 ticketRoutes.delete("/:id", async (c) => {
   const id = c.req.param("id");
-  await mongo.db.collection("tickets").deleteOne({ id });
+  await mongo.db.collection(TICKET_COLLECTION).deleteOne({ id });
 
   const resp = {
     base: {
