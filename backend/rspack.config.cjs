@@ -30,8 +30,9 @@ const config = {
     ],
   },
   plugins: [
+    // Define compile time NODE_ENV for tree shaking
     new EnvironmentPlugin({
-      NODE_ENV: "development",
+      NODE_ENV: process.env.NODE_ENV,
     }),
     new CopyRspackPlugin({
       patterns: [
