@@ -1,4 +1,4 @@
 ```
-npm install
-npm run deploy
+pnpm i
+pnpm run start
 ```
