@@ -14,8 +14,6 @@ export const TicketSchema = z.object({
   priority: PrioritySchema,
   type: TicketTypeSchema,
   reporter_id: z.string(),
-  created_at: z.string(),
-  updated_at: z.string(),
   embedding: z.optional(z.array(z.number())),
   parent_ticket_id: z.optional(z.string()),
   assignee_id: z.optional(z.string()),

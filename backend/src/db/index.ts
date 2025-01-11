@@ -16,7 +16,7 @@ const MustInit = async (cfg: AppConfig) => {
 
   mongoClient = new MongoClient(uri);
   await mongoClient.connect();
-  db = mongoClient.db();
+  db = mongoClient.db(cfg.dbName);
 
   console.info("MongoDB connected");
 };
