@@ -5,7 +5,6 @@ import time
 
 from entities import Ticket, Status, Priority, Type
 from .card import KanbanCard
-from .form import create_ticket_form
 
 
 class KanbanBoard:
@@ -165,10 +164,3 @@ class KanbanBoard:
                     self.create_ticket_card(
                         ticket, status
                     )  # Pass both ticket and current status
-
-        if st.button("+ Add Ticket"):
-            st.session_state.show_form = True
-
-        if st.session_state.show_form:
-            current_user_id = st.session_state.curr_user.id
-            create_ticket_form(current_user_id)

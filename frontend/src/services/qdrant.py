@@ -1,7 +1,7 @@
 import streamlit as st
 from qdrant_client import QdrantClient, models
 from .openai import text_to_embedding
-from ..utils.file_manager import read_json
+from utils import read_json
 
 QDRANT_URL = st.secrets["QDRANT"]["QDRANT_URL"]
 QDRANT_API_KEY = st.secrets["QDRANT"]["QDRANT_API_KEY"]
