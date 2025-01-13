@@ -55,6 +55,7 @@ class TicketTableManager:
 
         # Convert tickets to DataFrame for display
         df = pd.DataFrame(tickets)
+        st.table(df)
 
         # Sort columns for consistent display
         columns = [
@@ -76,7 +77,7 @@ class TicketTableManager:
         # Create expandable container for each ticket
         for idx, ticket in df.iterrows():
             with st.expander(
-                f"🎫 {ticket['title']} ({ticket['id']}) - {ticket['type']}",
+                f"🎫 {ticket.title} ({ticket.id}) - {ticket.type}",
                 expanded=False,
             ):
                 self._display_ticket_fields(ticket, idx)
@@ -90,18 +91,18 @@ class TicketTableManager:
             # Title and Description
             if self.can_edit_field("title", ticket.get("assignee_id")):
                 new_title = st.text_input(
-                    "Title", ticket["title"], key=f"title_{idx}", max_chars=100
+                    "Title", ticket.title, key=f"title_{idx}", max_chars=100
                 )
-                if new_title != ticket["title"]:
-                    self._handle_field_update(ticket["id"], "title", new_title)
+                if new_title != ticket.title:
+                    self._handle_field_update(ticket.id, "title", new_title)
 
             st.write("Description:")
             if self.can_edit_field("description", ticket.get("assignee_id")):
-                new_desc = st.text_area("", ticket["description"], key=f"desc_{idx}")
-                if new_desc != ticket["description"]:
-                    self._handle_field_update(ticket["id"], "description", new_desc)
+                new_desc = st.text_area("", ticket.description, key=f"desc_{idx}")
+                if new_desc != ticket.description:
+                    self._handle_field_update(ticket.id, "description", new_desc)
             else:
-                st.write(ticket["description"])
+                st.write(ticket.description)
 
         with col2:
             # Type, Status and Priority
@@ -109,37 +110,37 @@ class TicketTableManager:
                 new_type = st.selectbox(
                     "Type",
                     options=[t.value for t in Type],
-                    index=[t.value for t in Type].index(ticket["type"]),
+                    index=[t.value for t in Type].index(ticket.type),
                     key=f"type_{idx}",
                 )
-                if new_type != ticket["type"]:
-                    self._handle_field_update(ticket["id"], "type", new_type)
+                if new_type != ticket.type:
+                    self._handle_field_update(ticket.id, "type", new_type)
             else:
-                st.write(f"Type: {ticket['type']}")
+                st.write(f"Type: {ticket.type}")
 
             if self.can_edit_field("status", ticket.get("assignee_id")):
                 new_status = st.selectbox(
                     "Status",
                     options=[s.value for s in Status],
-                    index=[s.value for s in Status].index(ticket["status"]),
+                    index=[s.value for s in Status].index(ticket.status),
                     key=f"status_{idx}",
                 )
-                if new_status != ticket["status"]:
-                    self._handle_field_update(ticket["id"], "status", new_status)
+                if new_status != ticket.status:
+                    self._handle_field_update(ticket.id, "status", new_status)
             else:
-                st.write(f"Status: {ticket['status']}")
+                st.write(f"Status: {ticket.status}")
 
             if self.can_edit_field("priority", ticket.get("assignee_id")):
                 new_priority = st.selectbox(
                     "Priority",
                     options=[p.value for p in Priority],
-                    index=[p.value for p in Priority].index(ticket["priority"]),
+                    index=[p.value for p in Priority].index(ticket.priority),
                     key=f"priority_{idx}",
                 )
-                if new_priority != ticket["priority"]:
-                    self._handle_field_update(ticket["id"], "priority", new_priority)
+                if new_priority != ticket.priority:
+                    self._handle_field_update(ticket.id, "priority", new_priority)
             else:
-                st.write(f"Priority: {ticket['priority']}")
+                st.write(f"Priority: {ticket.priority}")
 
             # Assignment
             if self.can_edit_field("assignee_id", ticket.get("assignee_id")):
@@ -149,15 +150,15 @@ class TicketTableManager:
                     key=f"assignee_{idx}",
                 )
                 if new_assignee != ticket.get("assignee_id"):
-                    self._handle_field_update(ticket["id"], "assignee_id", new_assignee)
+                    self._handle_field_update(ticket.id, "assignee_id", new_assignee)
             else:
                 st.write(f"Assignee: {ticket.get('assignee_id', 'Unassigned')}")
 
         # Labels (shown as tags)
         if self.can_edit_field("labels", ticket.get("assignee_id")):
             current_labels = (
-                ", ".join(ticket["labels"])
-                if isinstance(ticket["labels"], list)
+                ", ".join(ticket.labels)
+                if isinstance(ticket.labels, list)
                 else ""
             )
             new_labels = st.text_input(
@@ -166,14 +167,14 @@ class TicketTableManager:
             new_labels_list = [
                 label.strip() for label in new_labels.split(",") if label.strip()
             ]
-            if new_labels_list != ticket["labels"]:
-                self._handle_field_update(ticket["id"], "labels", new_labels_list)
+            if new_labels_list != ticket.labels:
+                self._handle_field_update(ticket.id, "labels", new_labels_list)
         else:
             st.write(
                 "Labels:",
                 (
-                    ", ".join(ticket["labels"])
-                    if isinstance(ticket["labels"], list)
+                    ", ".join(ticket.labels)
+                    if isinstance(ticket.labels, list)
                     else ""
                 ),
             )
@@ -186,17 +187,17 @@ class TicketTableManager:
                 key=f"parent_{idx}",
             )
             if new_parent != ticket.get("parent_ticket_id"):
-                self._handle_field_update(ticket["id"], "parent_ticket_id", new_parent)
+                self._handle_field_update(ticket.id, "parent_ticket_id", new_parent)
 
         # Metadata row
         meta_col1, meta_col2, meta_col3 = st.columns(3)
         with meta_col1:
-            created_at = ticket["created_at"]
+            created_at = ticket.created_at
             if isinstance(created_at, str):
                 created_at = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
             st.write(f"Created: {created_at.strftime('%Y-%m-%d %H:%M')}")
         with meta_col2:
-            updated_at = ticket["updated_at"]
+            updated_at = ticket.updated_at
             if isinstance(updated_at, str):
                 updated_at = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
             st.write(f"Updated: {updated_at.strftime('%Y-%m-%d %H:%M')}")

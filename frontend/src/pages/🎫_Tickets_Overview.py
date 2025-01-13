@@ -4,14 +4,12 @@ from components import ticket_table
 from utils import SAMPLE_TICKETS
 
 
-def load_sample_data():
-    """Load sample ticket data from JSON file"""
-    try:
-        data = read_json("frontend/src/assets/sample_tickets.json")
-        return data["tickets"]  # Access the tickets array
-    except Exception as e:
-        st.error(f"Error loading sample data: {str(e)}")
-        return []
+st.set_page_config(
+    page_title="Tickets Overview",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+    page_icon="🎫",
+)
 
 
 def initialize_session_state():
