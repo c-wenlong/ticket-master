@@ -9,18 +9,7 @@ export type AppConfig = {
 
 export const loadConfig = async () => {
   if (process.env.NODE_ENV !== "production") {
-    const path = await import("path");
-    const dotenv = await import("dotenv");
-
-    const out = dotenv.config({
-      path: path.resolve(__dirname, "../../.env"),
-    });
-
-    if (out.error) {
-      throw out.error;
-    }
-
-    console.log("Loaded .env file in development");
+    await loadDotenv();
   }
 
   const config: AppConfig = {
@@ -33,4 +22,27 @@ export const loadConfig = async () => {
   };
 
   return config;
+};
+
+const loadDotenv = async () => {
+  const path = await import("path");
+  const fs = await import("fs");
+  const dotenv = await import("dotenv");
+
+  const dotenvPath = path.resolve(__dirname, "../../.env");
+
+  if (!fs.existsSync(dotenvPath)) {
+    console.warn("No .env file found in root of project directory, using default values");
+    return;
+  }
+
+  const out = dotenv.config({
+    path: dotenvPath,
+  });
+
+  if (out.error) {
+    throw out.error;
+  }
+
+  console.log("Loaded .env file in development");
 };
