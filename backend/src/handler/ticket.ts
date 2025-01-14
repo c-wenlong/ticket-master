@@ -1,6 +1,7 @@
+import { Hono } from "hono";
+
 import mongo, { TICKET_COLLECTION } from "@/db";
 import { Ticket, TicketSchema } from "@/schema";
-import { Hono } from "hono";
 
 enum TicketStatusCode {
   Success = 0,

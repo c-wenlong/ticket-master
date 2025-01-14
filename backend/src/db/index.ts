@@ -1,5 +1,6 @@
-import { AppConfig } from "@/config";
 import { Db, MongoClient } from "mongodb";
+
+import { AppConfig } from "@/config";
 
 let mongoClient: Optional<MongoClient> = null;
 let db: Optional<Db> = null;
@@ -43,3 +44,4 @@ export default {
 
 export * from "./constant";
 export * from "./type";
+
