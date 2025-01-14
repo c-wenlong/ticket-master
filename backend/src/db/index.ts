@@ -40,3 +40,6 @@ export default {
 
   MustInit,
 };
+
+export * from "./constant";
+export * from "./type";
