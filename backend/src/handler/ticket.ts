@@ -1,6 +1,5 @@
-import mongo from "@/db";
-import { TICKET_COLLECTION } from "@/db/constant";
-import { Ticket, TicketSchema } from "@/schema/ticket";
+import mongo, { TICKET_COLLECTION } from "@/db";
+import { Ticket, TicketSchema } from "@/schema";
 import { Hono } from "hono";
 
 enum TicketStatusCode {
