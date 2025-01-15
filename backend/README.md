@@ -36,3 +36,59 @@ pnpm build:prod
 ```
 
 - The build artifacts will be stored in the `backend/dist` directory. Entry point is `backend/dist/index.js`
+
+### Metrics Collection Schema
+
+```ts
+export const TicketStatusSchema = z.enum(["in_progress", "open", "done"]);
+
+export const EventSchema = z.object({
+  event_id: z.string(),
+  timestamp: z.number().int(),
+  event_detail: z.string(),
+  event_value: z.number().int(),
+  ticket_id: z.string(),
+  ticket_status: TicketStatusSchema,
+});
+
+export const QueryOperationSchema = z.literal("AND").or(z.literal("OR"));
+
+export const QueryEventSchema = z.object({
+  start: z.number().int(),
+  end: z.number().int(),
+  ticket_status: z.optional(TicketStatusSchema.or(z.array(TicketStatusSchema))),
+});
+```
+
+### HTTP Endpoints
+
+- `/metrics/emit` - POST - Emits metrics
+  - Request Body: `EventSchema` 
+
+```json
+{
+  "event_id": "xxxxxxxxxxxxxxxxxxxxx",
+  "timestamp": 1630000000,
+  "event_detail": "event detail",
+  "event_value": 1,
+  "ticket_id": "xxxxxxxxxxxxxxxxxxxxx",
+  "ticket_status": "open"
+}
+```
+
+- `/metrics/query` - POST - Query metrics
+  - Request Body: `QueryEventSchema`
+
+```json
+{
+  "start": 1630000000,
+  "end": 1630000000,
+  "ticket_status": ["open", "done"]
+}
+
+{
+  "start": 1630000000,
+  "end": 1630000000,
+  "ticket_status": "open"
+}
+```
