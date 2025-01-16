@@ -16,8 +16,8 @@ export type Event = z.infer<typeof EventSchema>;
 
 export const SprintSchema = z.object({
   id: z.string(),
-  start_time: z.coerce.date(),
-  end_time: z.coerce.date(),
+  start_time: z.number().int(),
+  end_time: z.number().int().optional(),
   events: z.array(EventSchema).optional(),
 })
 
