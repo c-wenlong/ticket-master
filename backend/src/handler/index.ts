@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 
-import { metricRoutes } from "./metrics";
+import { analyticsRoutes } from "./analytics";
 
 export const setupRoutes = (app: Hono) => {
-  app.route("/metrics", metricRoutes);
+  app.route("/analytics", analyticsRoutes);
 }
