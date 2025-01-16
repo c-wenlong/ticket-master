@@ -33,8 +33,8 @@ analyticsRoutes.post("/", async (c) => {
     : new Date(endTimeSearchParam);
 
   const sprint: Partial<Sprint> = {
-    start_time: startTime,
-    end_time: endTime,
+    start_time: startTime.getTime(),
+    end_time: endTime?.getTime(),
     events: [],
   };
 
@@ -136,7 +136,7 @@ analyticsRoutes.post("/:id/emit_event", async (c) => {
     .collection<Sprint>(SPRINT_COLLECTION)
     .updateOne({ _id: new ObjectId(sprintId) }, { $push: { events: event } });
 
-  if (!updateRes.acknowledged) {
+  if (!updateRes.acknowledged || updateRes.modifiedCount === 0) {
     const resp = {
       base: {
         code: StatusCode.SprintNotFound,
@@ -185,7 +185,7 @@ analyticsRoutes.put("/:id", async (c) => {
     .collection(SPRINT_COLLECTION)
     .updateOne({ _id: new ObjectId(sprintId) }, { $set: updateSprint });
 
-  if (!updateRes.acknowledged) {
+  if (!updateRes.acknowledged || updateRes.matchedCount === 0) {
     const resp = {
       base: {
         code: StatusCode.SprintNotFound,
@@ -200,7 +200,7 @@ analyticsRoutes.put("/:id", async (c) => {
   const sprint = (await mongo.db
     .collection(SPRINT_COLLECTION)
     .findOne({ _id: new ObjectId(sprintId) }))!;
-    
+
   sprint.id = sprint._id.toHexString();
   const resp = {
     base: {

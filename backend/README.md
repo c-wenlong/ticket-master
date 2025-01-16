@@ -37,58 +37,194 @@ pnpm build:prod
 
 - The build artifacts will be stored in the `backend/dist` directory. Entry point is `backend/dist/index.js`
 
-### Metrics Collection Schema
+## Endpoints
 
-```ts
-export const TicketStatusSchema = z.enum(["in_progress", "open", "done"]);
-
-export const EventSchema = z.object({
-  event_id: z.string(),
-  timestamp: z.number().int(),
-  event_detail: z.string(),
-  event_value: z.number().int(),
-  ticket_id: z.string(),
-  ticket_status: TicketStatusSchema,
-});
-
-export const QueryOperationSchema = z.literal("AND").or(z.literal("OR"));
-
-export const QueryEventSchema = z.object({
-  start: z.number().int(),
-  end: z.number().int(),
-  ticket_status: z.optional(TicketStatusSchema.or(z.array(TicketStatusSchema))),
-});
+### 1. **Create a New Sprint**
+**Endpoint:**
 ```
+POST /analytics/
+```
+**Description:** Creates a new sprint.
 
-### HTTP Endpoints
+**Optional Query Parameters:**
+- `start_time` (number): Unix timestamp in milliseconds for the sprint start time. Defaults to the current time.
+- `end_time` (number): Unix timestamp in milliseconds for the sprint end time. Must be after `start_time`. Defaults to `undefined`.
 
-- `/metrics/emit` - POST - Emits metrics
-  - Request Body: `EventSchema` 
-
+**Example cURL:**
+```bash
+curl -X POST "http://localhost:3000/analytics?start_time=1672531200000&end_time=1672617600000"
+```
+**Response:**
 ```json
 {
-  "event_id": "xxxxxxxxxxxxxxxxxxxxx",
-  "timestamp": 1630000000,
-  "event_detail": "event detail",
-  "event_value": 1,
-  "ticket_id": "xxxxxxxxxxxxxxxxxxxxx",
-  "ticket_status": "open"
+  "base": {
+    "code": 0,
+    "message": "Sprint created"
+  },
+  "data": {
+    "id": "<sprint_id>",
+    "start_time": 1672531200000,
+    "end_time": 1672617600000,
+    "events": []
+  }
 }
 ```
 
-- `/metrics/query` - POST - Query metrics
-  - Request Body: `QueryEventSchema`
+---
 
+### 2. **Get All Sprints**
+**Endpoint:**
+```
+GET /analytics/
+```
+**Description:** Retrieves all sprints.
+
+**Example cURL:**
+```bash
+curl -X GET "http://localhost:3000/analytics"
+```
+**Response:**
 ```json
 {
-  "start": 1630000000,
-  "end": 1630000000,
-  "ticket_status": ["open", "done"]
-}
-
-{
-  "start": 1630000000,
-  "end": 1630000000,
-  "ticket_status": "open"
+  "base": {
+    "code": 0,
+    "message": "success"
+  },
+  "data": [
+    {
+      "id": "<sprint_id>",
+      "start_time": 1672531200000,
+      "end_time": 1672617600000,
+      "events": []
+    }
+  ]
 }
 ```
+
+---
+
+### 3. **Get a Sprint by ID**
+**Endpoint:**
+```
+GET /analytics/:id
+```
+**Description:** Retrieves a sprint by its ID.
+
+**Path Parameters:**
+- `id` (string): The ID of the sprint.
+
+**Example cURL:**
+```bash
+curl -X GET "http://localhost:3000/analytics/<sprint_id>"
+```
+**Response:**
+```json
+{
+  "base": {
+    "code": 0,
+    "message": "success"
+  },
+  "data": {
+    "id": "<sprint_id>",
+    "start_time": 1672531200000,
+    "end_time": 1672617600000,
+    "events": []
+  }
+}
+```
+
+---
+
+### 4. **Emit an Event to a Sprint**
+**Endpoint:**
+```
+POST /analytics/:id/emit_event
+```
+**Description:** Adds an event to the specified sprint.
+
+**Path Parameters:**
+- `id` (string): The ID of the sprint.
+
+**Request Body:**
+- `ticket_id` (string): The ID of the ticket.
+- `timestamp` (number): Unix timestamp for the event.
+- `description` (string): Description of the event.
+- `status` (string): One of `"in_progress"`, `"open"`, `"done"`.
+- `priority` (string): One of `"low"`, `"medium"`, `"high"`.
+
+**Example cURL:**
+```bash
+curl -X POST "http://localhost:3000/analytics/<sprint_id>/emit_event" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "ticket_id": "TICKET_ABCD",
+       "timestamp": 1672531200000,
+       "description": "Fixing a bug",
+       "status": "in_progress",
+       "priority": "high"
+     }'
+```
+**Response:**
+```json
+{
+  "base": {
+    "code": 0,
+    "message": "Metric emitted"
+  },
+  "data": {
+    "id": "<sprint_id>",
+    "start_time": 1672531200000,
+    "end_time": 1672617600000,
+    "events": [
+      {
+        "ticket_id": "TICKET_ABCD",
+        "timestamp": 1672531200000,
+        "description": "Fixing a bug",
+        "status": "in_progress",
+        "priority": "high"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 5. **Update a Sprint**
+**Endpoint:**
+```
+PUT /analytics/:id
+```
+**Description:** Updates a sprint's details.
+
+**Path Parameters:**
+- `id` (string): The ID of the sprint.
+
+**Request Body:**
+- `start_time` (number, optional): New start time in milliseconds.
+- `end_time` (number, optional): New end time in milliseconds.
+
+**Example cURL:**
+```bash
+curl -X PUT "http://localhost:3000/analytics/<sprint_id>" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "end_time": 1672704000000
+     }'
+```
+**Response:**
+```json
+{
+  "base": {
+    "code": 0,
+    "message": "Sprint updated"
+  },
+  "data": {
+    "id": "<sprint_id>",
+    "start_time": 1672531200000,
+    "end_time": 1672704000000,
+    "events": []
+  }
+}
+```
+
