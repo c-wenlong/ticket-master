@@ -18,7 +18,11 @@ export const SprintSchema = z.object({
   id: z.string(),
   start_time: z.coerce.date(),
   end_time: z.coerce.date(),
-  events: z.array(EventSchema),
+  events: z.array(EventSchema).optional(),
 })
 
+export const UpdateSprintSchema = SprintSchema.partial().omit({ id: true, events: true});
+
 export type Sprint = z.infer<typeof SprintSchema>;
+
+export type UpdateSprint = z.infer<typeof UpdateSprintSchema>;

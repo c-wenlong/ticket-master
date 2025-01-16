@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 
 import mongo, { SPRINT_COLLECTION } from "@/db";
-import { EventSchema, Sprint } from "@/schema";
+import { EventSchema, Sprint, UpdateSprintSchema } from "@/schema";
 import { ObjectId } from "mongodb";
 
 enum StatusCode {
@@ -156,6 +156,56 @@ analyticsRoutes.post("/:id/emit_event", async (c) => {
     base: {
       code: StatusCode.Success,
       message: "Metric emitted",
+    },
+    data: sprint,
+  } satisfies HttpResponse;
+  return c.json(resp);
+});
+
+analyticsRoutes.put("/:id", async (c) => {
+  const body = await c.req.json();
+  const sprintId = c.req.param().id;
+  const parseResult = UpdateSprintSchema.safeParse(body);
+
+  if (!parseResult.success) {
+    const resp = {
+      base: {
+        code: StatusCode.IllegalPayload,
+        message: "Illegal payload",
+        errorMessage: parseResult.error.message,
+      },
+    } satisfies HttpResponse;
+
+    c.status(400);
+    return c.json(resp);
+  }
+
+  const updateSprint = parseResult.data;
+  const updateRes = await mongo.db
+    .collection(SPRINT_COLLECTION)
+    .updateOne({ _id: new ObjectId(sprintId) }, { $set: updateSprint });
+
+  if (!updateRes.acknowledged) {
+    const resp = {
+      base: {
+        code: StatusCode.SprintNotFound,
+        message: "Sprint not found",
+      },
+    } satisfies HttpResponse;
+
+    c.status(404);
+    return c.json(resp);
+  }
+
+  const sprint = (await mongo.db
+    .collection(SPRINT_COLLECTION)
+    .findOne({ _id: new ObjectId(sprintId) }))!;
+    
+  sprint.id = sprint._id.toHexString();
+  const resp = {
+    base: {
+      code: StatusCode.Success,
+      message: "Sprint updated",
     },
     data: sprint,
   } satisfies HttpResponse;
