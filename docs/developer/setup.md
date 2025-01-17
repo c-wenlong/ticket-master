@@ -106,3 +106,31 @@ If you encounter any issues:
 3. Verify that ticket dictionary structure matches the expected format
 4. Clear browser cache if changes aren't reflecting
 5. Verify that your `secrets.toml` file is properly formatted and contains all required credentials
+
+## Lambda Backend Docker Container Build Setup
+
+1. Navigate to
+
+```
+backend\src\ticket
+```
+2. Build Image
+```
+docker build -t test:{folder_name} --build-arg LAMBDA_FUNC_PATH={folder_name} .
+```
+
+where folder_name is the backend function folder you wish to build. e.g.
+
+```
+docker build -t test:create --build-arg LAMBDA_FUNC_PATH=create .
+```
+
+3. Tag Image
+```
+docker tag test:{folder_name} 590183762717.dkr.ecr.ap-southeast-1.amazonaws.com/test:{folder_name}
+```
+
+4. Push Image
+```
+docker push 590183762717.dkr.ecr.ap-southeast-1.amazonaws.com/test:{folder_name}
+```
