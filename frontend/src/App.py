@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 
-from utils import SAMPLE_TICKETS, SAMPLE_USERS, get_user
+from utils import SAMPLE_TICKETS, SAMPLE_USERS, get_user, auth_user
 
 st.set_page_config(
     layout="centered",
@@ -26,7 +26,9 @@ def initialise_states():
 initialise_states()
 username = st.session_state.curr_user
 if st.session_state.curr_user:
+    user = get_user(SAMPLE_USERS, st.session_state.curr_user)
     st.title("Welcome to Ticket Master")
+    st.subheader(f"You are logged in as {user.name} with {user.email}")
 else:
     st.title("Please log in")
 
@@ -38,7 +40,7 @@ if st.session_state.curr_user == None:
     submitted = st.button("Let's Go!")
 
     if submitted:
-        user = get_user(SAMPLE_USERS, name, email)
+        user = auth_user(SAMPLE_USERS, name, email)
         if user:
             st.success(f"You have logged in as {user.name} with {user.email}.")
             time.sleep(2)
