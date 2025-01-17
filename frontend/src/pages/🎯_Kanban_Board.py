@@ -3,7 +3,7 @@ import json
 import time
 
 from components import KanbanBoard
-from utils import SAMPLE_TICKETS
+from utils import SAMPLE_TICKETS, SAMPLE_USERS
 from entities import User
 from components import create_ticket_form
 from services import text_to_ticket

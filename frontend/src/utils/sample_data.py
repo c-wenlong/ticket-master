@@ -131,30 +131,30 @@ SAMPLE_USERS = [
     User(**user_data)
     for user_data in [
         {
-            "id": "USER-KC",
+            "id": "USER-1",
             "name": "Kai Chen",
-            "email": "kai@example.com",
+            "email": "chenwenlongofficial@gmail.com",
             "username": "kai",
             "role": "developer",
         },
         {
-            "id": "USER-AV",
+            "id": "USER-2",
             "name": "Avellin",
-            "email": "avellin@example.com",
+            "email": "avellin@gmail.com",
             "username": "avellin",
             "role": "developer",
         },
         {
-            "id": "USER-XY",
+            "id": "USER-3",
             "name": "Xiaoyun",
-            "email": "xiaoyun@example.com",
+            "email": "xiaoyun@gmail.com",
             "username": "xiaoyun",
             "role": "developer",
         },
         {
-            "id": "USER-RY",
+            "id": "USER-4",
             "name": "Ryan",
-            "email": "ryan@example.com",
+            "email": "ryan@gmail.com",
             "username": "ryan",
             "role": "developer",
         },
