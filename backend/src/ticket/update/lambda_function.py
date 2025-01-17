@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Dict
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
-from qdrant_client.models import PointVectors
+from qdrant_client.models import PointVectors, Record
 from qdrant_client.http.models import PointStruct
 
 load_dotenv()
@@ -47,7 +47,7 @@ def lambda_handler(event, _context):
             "body": json.dumps({"base": {"message": "ticket data is required"}}),
         }
 
-    update_ticket_payload(ticket_id, ticket_delta)
+    update_ticket_payload(original_ticket, ticket_delta)
     original_ticket = select_ticket(ticket_id)
     assert original_ticket, "Unexpected state: ticket not found after update"
 
@@ -77,16 +77,23 @@ def text_to_embedding(text):
     return embeddings.data[0].embedding
 
 
-def update_ticket_payload(ticket_id: int, ticket_delta: Dict):
+def update_ticket_payload(original_ticket: Record, ticket_delta: Dict):
     qdrant_client.set_payload(
-        collection_name=QDRANT_COLLECTION_NAME, points=[ticket_id], payload=ticket_delta
+        collection_name=QDRANT_COLLECTION_NAME,
+        points=[original_ticket.id],
+        payload=ticket_delta,
     )
+
+    ticket_title = ticket_delta.get("title") or (original_ticket.payload or {})["title"]
+    ticket_desc = (
+        ticket_delta.get("description")
+        or (original_ticket.payload or {})["description"]
+    )
+    ticket_text = f"ticket title: {ticket_title}, ticket description: {ticket_desc}"
 
     qdrant_client.update_vectors(
         collection_name=QDRANT_COLLECTION_NAME,
         points=[
-            PointVectors(
-                id=ticket_id, vector=text_to_embedding(ticket_delta["session_name"])
-            ),
+            PointVectors(id=original_ticket.id, vector=text_to_embedding(ticket_text)),
         ],
     )
