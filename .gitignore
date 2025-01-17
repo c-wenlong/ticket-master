@@ -7,3 +7,6 @@
 .sandbox/
 *.pem
 .streamlit/
+
+**/node_modules
+**/dist
