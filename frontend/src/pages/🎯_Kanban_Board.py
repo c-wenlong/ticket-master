@@ -26,8 +26,6 @@ curr_user = User(
 
 
 def initialise_states():
-    if "tickets" not in st.session_state:
-        st.session_state.tickets = []
     if "show_manual_form" not in st.session_state:
         st.session_state.show_manual_form = False
     if "show_ai_form" not in st.session_state:
@@ -44,20 +42,23 @@ def add_ticket():
             if st.button("+ Add Ticket", use_container_width=True):
                 st.session_state.show_manual_form = True
                 st.session_state.show_ai_form = False  # Close other form if open
+                st.rerun()
         else:
             if st.button("❌ Cancel Manual Ticket", use_container_width=True):
                 st.session_state.show_manual_form = False
-            current_user_id = st.session_state.curr_user.id
-            create_ticket_form(current_user_id)
+                st.rerun()
+            create_ticket_form(st.session_state.curr_user.id)
 
     with ai_assisted:
         if not st.session_state.show_ai_form:
             if st.button("+ AI Assisted Ticket", use_container_width=True):
                 st.session_state.show_ai_form = True
                 st.session_state.show_manual_form = False  # Close other form if open
+                st.rerun()
         else:
             if st.button("❌ Cancel AI Ticket", use_container_width=True):
                 st.session_state.show_ai_form = False
+                st.rerun()
             ticket_prompt = st.text_area("What would your ticket be?")
             if ticket_prompt:
                 try:
