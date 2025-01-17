@@ -47,7 +47,7 @@ def add_ticket():
             if st.button("❌ Cancel Manual Ticket", use_container_width=True):
                 st.session_state.show_manual_form = False
                 st.rerun()
-            create_ticket_form(st.session_state.curr_user.id)
+            create_ticket_form(st.session_state.curr_user)
 
     with ai_assisted:
         if not st.session_state.show_ai_form:
