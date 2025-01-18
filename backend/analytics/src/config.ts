@@ -1,6 +1,6 @@
-import path from "path";
-import fs from "fs";
 import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
 
 export type AppConfig = {
   dbUserName: string;
@@ -23,6 +23,8 @@ export const loadConfig = async () => {
     devHttpPort: Number(process.env.DEV_HTTP_PORT ?? "3000"),
   };
 
+  console.log("Loaded config", config);
+
   return config;
 };
 
@@ -31,7 +33,7 @@ const loadDotenv = async () => {
   if (process.env.NODE_ENV !== "production") {
     dotenvPath = path.resolve(__dirname, "../../../.env");
   } else {
-    dotenvPath = ".env";
+    dotenvPath = path.resolve(process.cwd(), '.env')
   }
 
   if (!fs.existsSync(dotenvPath)) {
