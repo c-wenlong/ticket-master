@@ -1,7 +1,6 @@
 import streamlit as st
-from utils import read_json
 from components import ticket_table
-from utils import SAMPLE_TICKETS
+from utils import SAMPLE_TICKETS, SAMPLE_USERS
 
 
 st.set_page_config(
@@ -14,8 +13,6 @@ st.set_page_config(
 
 def initialize_session_state():
     """Initialize session state variables"""
-    if "current_user" not in st.session_state:
-        st.session_state.current_user = "kai"  # Default user for demo
     if "is_admin" not in st.session_state:
         st.session_state.is_admin = True  # Default admin status for demo
 
@@ -30,13 +27,15 @@ def main():
     with st.sidebar:
         st.header("User Context")
         # In a real app, these would come from authentication
-        st.session_state.current_user = st.selectbox(
-            "Current User", options=["kai", "ryan", "avellin"], index=0
+        st.session_state.curr_user = st.selectbox(
+            label="Current User",
+            options=[USER.name for USER in SAMPLE_USERS],
+            index=0,
         )
         st.session_state.is_admin = st.checkbox("Is Admin", value=True)
 
         st.divider()
-        st.write("Current User:", st.session_state.current_user)
+        st.write("Current User:", st.session_state.curr_user)
         st.write("Admin Status:", "✅" if st.session_state.is_admin else "❌")
 
     # Load sample data
@@ -58,7 +57,7 @@ def main():
         st.metric("In Progress", in_progress)
     with col4:
         my_tickets = sum(
-            1 for t in tickets if t.assignee_id == st.session_state.current_user
+            1 for t in tickets if t.assignee_id == st.session_state.curr_user
         )
         st.metric("My Tickets", my_tickets)
 
