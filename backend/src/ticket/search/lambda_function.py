@@ -59,3 +59,4 @@ def fetch_similar_tickets(
         results.append({"payload": ticket.payload, "score": ticket.score})
     return results
 
+ 

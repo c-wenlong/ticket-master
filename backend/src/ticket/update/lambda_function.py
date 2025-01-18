@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import os
 from openai import OpenAI
@@ -76,6 +77,8 @@ def text_to_embedding(text):
 
 
 def update_ticket_payload(original_ticket: Record, ticket_delta: Dict):
+    ticket_delta["updated_at"] = datetime.now().timestamp()
+  
     qdrant_client.set_payload(
         collection_name=QDRANT_COLLECTION_NAME,
         points=[original_ticket.id],
@@ -88,7 +91,10 @@ def update_ticket_payload(original_ticket: Record, ticket_delta: Dict):
     ticket_desc = ticket_delta.get("description") or (
         original_ticket.payload or {}
     ).get("description")
-    ticket_text = f"ticket title: {ticket_title}, ticket description: {ticket_desc}"
+    ticket_type = ticket_delta.get("type") or (original_ticket.payload or {}).get(
+        "type"
+    )
+    ticket_text = f"ticket title: {ticket_title}, ticket description: {ticket_desc}, ticket type: {ticket_type}"
     ticket_embedding = text_to_embedding(ticket_text)
 
     qdrant_client.update_vectors(
