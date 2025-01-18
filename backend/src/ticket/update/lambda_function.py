@@ -1,12 +1,10 @@
 import json
 import os
 from openai import OpenAI
-from datetime import datetime
 from typing import Dict
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointVectors, Record
-from qdrant_client.http.models import PointStruct
 
 load_dotenv()
 
@@ -84,16 +82,18 @@ def update_ticket_payload(original_ticket: Record, ticket_delta: Dict):
         payload=ticket_delta,
     )
 
-    ticket_title = ticket_delta.get("title") or (original_ticket.payload or {})["title"]
-    ticket_desc = (
-        ticket_delta.get("description")
-        or (original_ticket.payload or {})["description"]
+    ticket_title = ticket_delta.get("title") or (original_ticket.payload or {}).get(
+        "title"
     )
+    ticket_desc = ticket_delta.get("description") or (
+        original_ticket.payload or {}
+    ).get("description")
     ticket_text = f"ticket title: {ticket_title}, ticket description: {ticket_desc}"
+    ticket_embedding = text_to_embedding(ticket_text)
 
     qdrant_client.update_vectors(
         collection_name=QDRANT_COLLECTION_NAME,
         points=[
-            PointVectors(id=original_ticket.id, vector=text_to_embedding(ticket_text)),
+            PointVectors(id=original_ticket.id, vector=ticket_embedding),
         ],
     )
