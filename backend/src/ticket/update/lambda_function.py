@@ -31,7 +31,7 @@ def lambda_handler(event, _context):
             "body": json.dumps({"base": {"message": "ticket data is required"}}),
         }
 
-    ticket_id = body.get("id")
+    ticket_id = ticket_delta.get("id")
     del ticket_delta["id"] # we don't want to update the id
 
     if not ticket_id:
