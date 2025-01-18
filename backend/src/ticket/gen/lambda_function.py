@@ -50,6 +50,7 @@ class Ticket(BaseModel):
     status: TicketStatus
     priority: TicketPriority
     type: TicketType
+    labels: list[str]
 
 
 class TicketGenResponse(BaseModel):
@@ -128,6 +129,7 @@ def generate_tickets(ticket_desc: str):
     The ticket type should be one of the following: "bug", "feature", "task".
     The ticket priority should be one of the following: "low", "medium", "high".
     The ticket status should default to "open".
+    The ticket label should be a list of strings that describe the ticket.
     
     Each ticket should be structured as follows:
     {
@@ -135,7 +137,8 @@ def generate_tickets(ticket_desc: str):
       "description": <str>,
       "type": <str>,
       "priority": <str>,
-      "status": "open"
+      "status": "open",
+      "labels": [<str>, <str>, ...]
     }
     
     Your response should be structured as follows:
