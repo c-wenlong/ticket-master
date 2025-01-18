@@ -22,8 +22,18 @@ openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 
 def lambda_handler(event, _context):
-    query_params: Dict = json.loads(event["queryStringParameters"]) or {}
-    ticket_id = query_params.get("id")
+    body: Dict = json.loads(event["body"])
+    ticket_delta = body.get("data")
+
+    if not ticket_delta or not isinstance(ticket_delta, dict) or len(ticket_delta) == 0:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"base": {"message": "ticket data is required"}}),
+        }
+
+    ticket_id = body.get("id")
+    del ticket_delta["id"] # we don't want to update the id
+
     if not ticket_id:
         return {
             "statusCode": 400,
@@ -35,15 +45,6 @@ def lambda_handler(event, _context):
         return {
             "statusCode": 404,
             "body": json.dumps({"base": {"message": "ticket not found"}}),
-        }
-
-    body: Dict = json.loads(event["body"])
-    ticket_delta = body.get("data")
-
-    if not ticket_delta or not isinstance(ticket_delta, dict) or len(ticket_delta) == 0:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"base": {"message": "ticket data is required"}}),
         }
 
     update_ticket_payload(original_ticket, ticket_delta)
@@ -78,7 +79,7 @@ def text_to_embedding(text):
 
 def update_ticket_payload(original_ticket: Record, ticket_delta: Dict):
     ticket_delta["updated_at"] = datetime.now().timestamp()
-  
+
     qdrant_client.set_payload(
         collection_name=QDRANT_COLLECTION_NAME,
         points=[original_ticket.id],
