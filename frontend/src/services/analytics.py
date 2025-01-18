@@ -104,7 +104,6 @@ def generate_tix_status_breakdown(events_by_ticket):
 def generate_tix_status_per_unit_time(tickets): 
     events = tickets["events"]
     start_time = tickets["start_time"]
-    print(start_time)
     end_time = tickets["end_time"]
 
     # Step 1: Sort all events by timestamp
