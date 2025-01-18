@@ -1,108 +1,278 @@
 # TicketMaster Setup Guide
 
+## Overview
+
+TicketMaster is a full-stack ticket management system built with Streamlit, OpenAI, and QDrant. This guide provides comprehensive setup instructions for both frontend and backend components.
+
 ## Prerequisites
 
 - Python 3.7 or higher
 - pip (Python package installer)
+- Git
+- Code editor (Cursor recommended)
+- QDrant account
+- OpenAI API key
 
-## Installation
+## Project Structure
 
-1. Create and activate a virtual environment:
+### Frontend Directory (`frontend/`)
+
+```
+src/
+├── .streamlit/          # Streamlit configuration and secrets
+├── components/          # Reusable UI components
+│   ├── card.py         # Kanban card component
+│   ├── form.py         # Ticket creation forms
+│   ├── kanban.py       # Kanban board component
+│   └── table.py        # Ticket table component
+├── notebooks/          # Jupyter notebooks for development
+├── pages/              # Streamlit pages
+│   ├── 🏠_Home.py      # Home page
+│   ├── 🎫_Tickets_Overview.py  # Tickets list view
+│   └── 🎯_Kanban_Board.py     # Kanban board view
+├── services/           # Backend service integrations
+│   ├── openai.py      # OpenAI service integration
+│   └── qdrant.py      # QDrant service integration
+├── App.py             # Main Streamlit application
+└── .gitignore         # Git ignore configuration
+```
+
+### Backend Directory (`backend/`)
+
+```
+src/
+├── documentdb/        # DocumentDB CRUD operations
+│   ├── __init__.py
+│   └── crud.py
+├── services/         # Service handlers
+│   ├── openai/      # OpenAI integration
+│   │   ├── __init__.py
+│   │   └── handler.py
+│   └── qdrant/      # QDrant integration
+│       ├── __init__.py
+│       └── handler.py
+└── .gitignore       # Git ignore configuration
+```
+
+## Installation Steps
+
+1. Clone the repository:
 
 ```bash
-# On Windows
-python -m .venv .venv
+git clone https://github.com/yourusername/ticket-master.git
+cd ticket-master
+```
+
+2. Create and activate a virtual environment:
+
+```bash
+# Windows
+python -m venv .venv
 .\.venv\Scripts\activate
 
-# On macOS/Linux
-python3 -m .venv .venv
+# macOS/Linux
+python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-2. Install required packages:
+3. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Project Structure
+## Configuration Setup
 
-### Frontend Directory Structure
+### Frontend Configuration (.streamlit/secrets.toml)
 
-```src/ # Root source directory
-├── components/         # Reusable UI components for Streamlit frontend
-├── notebooks/          # Jupyter notebooks for development and setup
-├── pages/              # Streamlit pages and routes
-├── services/          # Backend service integrations (OpenAI, Qdrant, etc.)
-├── App.py             # Entry point for streamlit
-└── .gitignore         # Git ignore configuration
-```
+1. Create the `.streamlit` directory:
 
-### Backend Directory Structure
-
-```src/ # Root source directory
-├── documentdb/         # Reusable CRUD components for Serverless API Interface (DocumentDB)
-├── services/          # Handlers for Serverless API Interface
-    ├── openai         # OpenAI LLM Handlers
-    └── qdrant         # Qdrant Vector DB Handlers
-└── .gitignore         # Git ignore configuration (TODO)
-```
-
-## Streamlit Secrets Configuration
-
-1. Create a `.streamlit` directory in your project root:
 ```bash
 mkdir frontend/.streamlit
 ```
 
-2. Create a `secrets.toml` file inside the `.streamlit` directory:
+2. Create and configure secrets.toml:
+
 ```bash
 touch frontend/.streamlit/secrets.toml
 ```
 
-3. Add your configuration secrets to `secrets.toml`, you can use `.streamlit.secrets.example.toml` file as an example:
+3. Add the following configuration (replace with your actual values):
+
 ```toml
-["QDRANT"]
-QDRANT_URL="https://e4006880-32d2-45b3-9bec-d22b237c2985.us-east4-0.gcp.cloud.qdrant.io:6333"
-QDRANT_API_KEY="API_KEY"
-COLLECTION_NAME="NAME"
+[QDRANT]
+QDRANT_URL = "https://your-qdrant-instance.cloud.qdrant.io:6333"
+QDRANT_API_KEY = "your-qdrant-api-key"
+COLLECTION_NAME = "tickets"
 
-["OPENAI"]
-OPENAI_API_KEY="API_KEY"
+[OPENAI]
+OPENAI_API_KEY = "your-openai-api-key"
+
+[DOCUMENTDB]
+CONNECTION_STRING = "your-documentdb-connection-string"
+DATABASE_NAME = "ticketmaster"
+COLLECTION_NAME = "tickets"
 ```
 
-4. Add `.streamlit/secrets.toml` to your `.gitignore` file:
+### Backend Configuration (.env)
+
+1. Create .env file in the backend directory:
+
 ```bash
-echo ".streamlit/secrets.toml" >> .gitignore
+touch backend/.env
 ```
 
-5. Access secrets in your Streamlit app:
-```python
-import streamlit as st
+2. Add the following configuration:
 
-# Access your secrets
-openai_key = st.secrets["OPENAI_API_KEY"]
-db_connection = st.secrets["DOCUMENT_DB_CONNECTION_STRING"]
+```env
+# QDrant Configuration
+QDRANT_URL=https://your-qdrant-instance.cloud.qdrant.io:6333
+QDRANT_API_KEY=your-qdrant-api-key
+QDRANT_COLLECTION=tickets
+
+# OpenAI Configuration
+OPENAI_API_KEY=your-openai-api-key
+
+# DocumentDB Configuration
+DOCUMENT_DB_CONNECTION_STRING=your-documentdb-connection-string
+DOCUMENT_DB_NAME=ticketmaster
+DOCUMENT_DB_COLLECTION=tickets
+```
+
+## Security Best Practices
+
+1. Add configuration files to .gitignore:
+
+```bash
+# Add to .gitignore
+frontend/.streamlit/secrets.toml
+backend/.env
+```
+
+2. Create example configuration files:
+
+```bash
+# Create frontend/streamlit.secrets.example.toml
+[QDRANT]
+QDRANT_URL = "your-qdrant-url"
+QDRANT_API_KEY = "your-qdrant-api-key"
+COLLECTION_NAME = "collection-name"
+
+[OPENAI]
+OPENAI_API_KEY = "your-openai-api-key"
+
+# Create backend/.env.example
+QDRANT_URL=your-qdrant-url
+QDRANT_API_KEY=your-qdrant-api-key
+OPENAI_API_KEY=your-openai-api-key
 ```
 
 ## Running the Application
 
-1. Make sure you have the file `frontend/src/App.py`, this is the entry point to the application. All files within `frontend/src/pages/` will also be rendered when you load `App.py`.
-
-2. Run the Streamlit app:
+### Frontend
 
 ```bash
-streamlit run frontend/src/App.py
+cd frontend
+streamlit run src/App.py
 ```
 
-The application will start and automatically open in your default web browser at `http://localhost:8501`.
+### Backend Development
+
+```bash
+cd backend
+python -m uvicorn main:app --reload
+```
+
+## Accessing Secrets in Code
+
+### Frontend (Streamlit)
+
+```python
+import streamlit as st
+
+# QDrant configuration
+qdrant_url = st.secrets["QDRANT"]["QDRANT_URL"]
+qdrant_api_key = st.secrets["QDRANT"]["QDRANT_API_KEY"]
+collection_name = st.secrets["QDRANT"]["COLLECTION_NAME"]
+
+# OpenAI configuration
+openai_api_key = st.secrets["OPENAI"]["OPENAI_API_KEY"]
+```
+
+### Backend (Python)
+
+```python
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# QDrant configuration
+QDRANT_URL = os.getenv("QDRANT_URL")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+QDRANT_COLLECTION = os.getenv("QDRANT_COLLECTION")
+
+# OpenAI configuration
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+```
 
 ## Troubleshooting
 
-If you encounter any issues:
+### Common Issues and Solutions
 
-1. Ensure all required packages are installed
-2. Check that all enum values match between Status, Priority, and Type
-3. Verify that ticket dictionary structure matches the expected format
-4. Clear browser cache if changes aren't reflecting
-5. Verify that your `secrets.toml` file is properly formatted and contains all required credentials
+1. **Missing Dependencies**
+
+   - Error: ModuleNotFoundError
+   - Solution: Run `pip install -r requirements.txt`
+
+2. **Configuration Issues**
+
+   - Error: KeyError in st.secrets
+   - Solution: Verify secrets.toml format and presence
+
+3. **QDrant Connection**
+
+   - Error: Connection refused
+   - Solution: Check URL and API key in configuration
+
+4. **OpenAI API**
+   - Error: Invalid API key
+   - Solution: Verify OpenAI API key in configuration
+
+### Development Tools
+
+1. **VS Code Extensions**
+
+   - Python
+   - Streamlit
+   - TOML
+   - Python Environment Manager
+
+2. **Debugging**
+   - Use `st.write()` for Streamlit debugging
+   - Enable Streamlit's debug mode in development
+
+## Best Practices
+
+1. **Version Control**
+
+   - Never commit secrets or configuration files
+   - Use example configuration files
+   - Regular commits with meaningful messages
+
+2. **Development Workflow**
+
+   - Use separate branches for features
+   - Test locally before deployment
+   - Follow code style guidelines
+
+3. **Security**
+   - Keep secrets secure
+   - Regularly rotate API keys
+   - Use environment-specific configurations
+
+## Support and Resources
+
+- QDrant Documentation: https://qdrant.tech/documentation/
+- Streamlit Documentation: https://docs.streamlit.io/
+- OpenAI API Documentation: https://platform.openai.com/docs/

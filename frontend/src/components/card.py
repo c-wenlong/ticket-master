@@ -19,7 +19,7 @@ class CardStyle:
     border_radius = "5px"
     margin = "5px 0"
     opacity = "0.9"
-    min_height = "120px"
+    min_height = "150px"
 
 
 class KanbanCard:
@@ -93,6 +93,8 @@ class KanbanCard:
 
     def _format_labels(self) -> str:
         """Format labels for display"""
+        if not len(self.labels):
+            return "No labels"
         return " ".join([f"#{label}" for label in self.labels])
 
     def _get_assignee_display(self) -> str:
@@ -111,11 +113,19 @@ class KanbanCard:
             min-height: {self.style.min_height};
         ">
             <div style="color: black;">
-                <strong>{self.id}</strong>: {self.title}
-                <br>
-                📝 {self.type} | 👤 {self.reporter_id}  ➜  👤 {self._get_assignee_display()}
-                <br>
-                <small>{self._format_labels()}</small>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <strong>{self.id}</strong>
+                    <span>📝 {self.type}</span>
+                </div>
+                <div style="font-size: 1.1em; font-weight: 500; margin-bottom: 8px;">
+                    {self.title}
+                </div>
+                <div style="margin-bottom: 6px;">
+                    👤 {self.reporter_id} ➜ 👤 {self._get_assignee_display()}
+                </div>
+                <div style="font-size: 0.8em;">
+                    {self._format_labels()}
+                </div>
             </div>
         </div>
         """
@@ -125,6 +135,7 @@ class KanbanCard:
         current_column: str,
         available_columns: List[str],
         on_move: Callable[[str, str], None],
+        on_delete: Callable[[str], None],
     ) -> None:
         """
         Render the card in the Streamlit UI
@@ -138,26 +149,23 @@ class KanbanCard:
 
         with card:
             # Split into card content and buttons
-            card_col, buttons_col = st.columns([4, 1])
+            card_col, move_col = st.columns([4, 0.5])
 
             with card_col:
                 st.markdown(self._generate_card_html(), unsafe_allow_html=True)
 
-            with buttons_col:
-                # Add spacing for vertical alignment
-                st.markdown("<div style='height: 20px'></div>", unsafe_allow_html=True)
+            current_col_idx = available_columns.index(current_column)
 
-                current_col_idx = available_columns.index(current_column)
-
-                # Left arrow button
+            # Left/Right movement buttons
+            with move_col:
                 if current_col_idx > 0:
-                    if st.button("←", key=f"left_{self.id}"):
+                    if st.button("⬅️", key=f"left_{self.id}"):
                         on_move(self.id, available_columns[current_col_idx - 1])
-
-                # Right arrow button
                 if current_col_idx < len(available_columns) - 1:
-                    if st.button("→", key=f"right_{self.id}"):
+                    if st.button("➡️", key=f"right_{self.id}"):
                         on_move(self.id, available_columns[current_col_idx + 1])
+                if st.button("🗑️", key=f"delete_{self.id}"):
+                    on_delete(self.id)
 
 
 # Example usage:

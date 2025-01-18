@@ -6,3 +6,5 @@
 # All your test files
 .sandbox/
 *.pem
+.streamlit/
+.vscode/
