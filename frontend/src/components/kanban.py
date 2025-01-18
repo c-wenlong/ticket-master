@@ -57,6 +57,7 @@ class KanbanBoard:
                 on_delete=self.delete_ticket,
             )
 
+    # TODO: call update from backend API
     def move_ticket(self, ticket_id: str, new_status: str):
         """Move a ticket to a new status column."""
         # Find the ticket by ID in the list

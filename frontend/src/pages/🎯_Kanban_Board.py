@@ -42,6 +42,8 @@ def add_ticket():
                 st.rerun()
             create_ticket_form(st.session_state.curr_user)
 
+    # TODO: this should be a submit form too
+    # TODO: integration - after receiving payload (similar tickets) from frontend, decide whether to force insert tickets
     with ai_assisted:
         if not st.session_state.show_ai_form:
             if st.button("+ AI Assisted Ticket", use_container_width=True):

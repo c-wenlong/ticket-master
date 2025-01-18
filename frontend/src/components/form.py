@@ -97,6 +97,7 @@ def create_ticket_form(current_user_id: str) -> Ticket:
             current_time = datetime.now(timezone.utc)
 
             # Create ticket data matching Pydantic schema
+            # TODO: call backend API to create ticket
             try:
                 new_ticket = Ticket(
                     title=title.strip(),

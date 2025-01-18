@@ -26,7 +26,6 @@ class Priority(str, Enum):
 
 class Ticket(BaseModel):
     id: str = Field(
-        default_factory=lambda: f"TICKET-{uuid4().hex[:8].upper()}",
         description="Unique identifier for the ticket",
     )
     title: str = Field(

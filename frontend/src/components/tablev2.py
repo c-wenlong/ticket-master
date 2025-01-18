@@ -203,6 +203,7 @@ def ticket_table(tickets: List[Union[Dict, Ticket]]):
                             updated_ticket = Ticket(**updated_data)
 
                         # Save to session state
+                        # TODO: replace with actual calls to backend
                         if "tickets" in st.session_state:
                             ticket_index = next(
                                 (
