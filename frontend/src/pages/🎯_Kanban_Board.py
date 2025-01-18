@@ -86,8 +86,9 @@ def add_ticket():
                     st.error(f"An error occurred: {str(e)}")
 
 
+initialise_states()
+
 if st.session_state.curr_user:
-    initialise_states()
     board = KanbanBoard(SAMPLE_TICKETS)
     board.render()
     add_ticket()

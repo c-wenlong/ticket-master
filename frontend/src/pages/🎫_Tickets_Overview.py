@@ -18,8 +18,6 @@ def initialize_session_state():
 
 
 def main():
-    initialize_session_state()
-
     # Page Header
     st.title("🎫 All Tickets")
 
@@ -111,9 +109,9 @@ def main():
                 st.session_state.edited_values = {}
                 st.rerun()
 
+initialize_session_state()
 
-if __name__ == "__main__":
-    if st.session_state.curr_user:
-        main()
-    else:
-        st.error("Please authenticate first!")
+if st.session_state.curr_user:
+    main()
+else:
+    st.error("Please authenticate first!")
