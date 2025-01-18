@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 from openai.types.create_embedding_response import CreateEmbeddingResponse
 from qdrant_client import QdrantClient
 
+from frontend.src.entities import ticket
+
 load_dotenv()
 
 SYSTEM = ""
@@ -57,7 +59,17 @@ class TicketGenResponse(BaseModel):
 
 def lambda_handler(event, _context):
     body = json.loads(event["body"])
-    ticket_description = body["data"]
+    data = body.get("data") or {}
+    ticket_description = data.get("ticket_description") or ""
+
+    if not ticket_description:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"base": {"message": "ticket description is required"}}),
+        }
+
+    reporter_id = data.get("reporter_id")
+    assignee_id = data.get("assignee_id")
     generated = generate_tickets(ticket_description)
 
     if not generated:
@@ -73,16 +85,22 @@ def lambda_handler(event, _context):
 
     master_ticket = generated.master_ticket
     similar_master_tickets = find_similar_tickets(master_ticket)
+    master_ticket_dict = master_ticket.model_dump()
+    master_ticket_dict["reporter_id"] = reporter_id
+    master_ticket_dict["assignee_id"] = assignee_id
     response["master_ticket"] = {
-        "ticket": master_ticket.model_dump(),
+        "ticket": master_ticket_dict,
         "similar_tickets": similar_master_tickets,
     }
 
     sub_tickets = generated.sub_tickets
     for sub_ticket in sub_tickets:
         similar_sub_tickets = find_similar_tickets(sub_ticket)
+        sub_ticket_dict = sub_ticket.model_dump()
+        sub_ticket_dict["reporter_id"] = reporter_id
+        sub_ticket_dict["assignee_id"] = assignee_id
         response["sub_tickets"].append(
-            {"ticket": sub_ticket.model_dump(), "similar_tickets": similar_sub_tickets}
+            {"ticket": sub_ticket_dict, "similar_tickets": similar_sub_tickets}
         )
 
     return {
