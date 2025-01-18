@@ -12,7 +12,7 @@ class ListTicketData(RootModel[list[Ticket]]):
     pass
 
 
-def get_tickets():
+def list_tickets():
     list_endpoint = f"{backend_base_url}/ticket/list"
     response = requests.get(list_endpoint)
     res = response.json()
@@ -27,8 +27,12 @@ def get_tickets():
         print("Generate ticket failed: ", res)
         print(res.base.message)
         return None
+      
+    if not res.data:
+        print("No ticket in response")
+        return None
 
-    return res.data
+    return res.data.root
 
 
 class GenTicketData(BaseModel):
@@ -60,7 +64,7 @@ def generate_ticket(ticket_desc: str, reporter_id: str, assignee_id: str):
         print("Generate ticket failed: ", res)
         print(res.base.message)
         return None
-
+    
     return res.data
 
 
@@ -99,7 +103,11 @@ def create_tickets(tickets: List[Ticket]):
         print(res.base.message)
         return None
 
-    return res.data
+    if not res.data:
+        print("No ticket in response")
+        return None
+
+    return res.data.root
 
 
 def update_ticket(ticket: Ticket):
