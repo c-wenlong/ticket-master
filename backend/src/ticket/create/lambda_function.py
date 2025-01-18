@@ -57,7 +57,7 @@ def lambda_handler(event, context):
         "body": json.dumps(
             {
                 "base": {"code": 0, "message": "success"},
-                "data": results[0] if len(results) == 0 else results,
+                "data": results[0] if len(results) == 1 else results,
             }
         ),
     }

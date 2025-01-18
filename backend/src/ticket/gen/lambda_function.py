@@ -120,25 +120,27 @@ def generate_tickets(ticket_desc: str):
     If the ticket is too complex, you may create sub-tickets as well if needed.
     Do not generate sub-tickets unnecessarily. Each ticket should minimumly take 1 man-day to complete.
     i.e. tickets that can be completed in less than a day should not be split.
-    
-    The ticket should have a title, description, type, priority and status.
+
+    The ticket should have a id, title, description, type, priority, status and status.
+    The ticket id should be default to an empty string "".
     The ticket title should be descriptive and be in title case.
     The ticket description should be detailed and provide context.
     The ticket type should be one of the following: "bug", "feature", "task".
     The ticket priority should be one of the following: "low", "medium", "high".
     The ticket status should default to "open".
     The ticket label should be a list of strings that describe the ticket.
-    
+
+
     Each ticket should be structured as follows:
     {
+      "id": "",
       "title": <str>,
       "description": <str>,
-      "type": <str>,
-      "priority": <str>,
+      "type": <str>,D
       "status": "open",
       "labels": [<str>, <str>, ...]
     }
-    
+
     Your response should be structured as follows:
     {
       "master_ticket": <Ticket>,
@@ -173,7 +175,7 @@ def text_to_embedding(ticket: Ticket):
 
 
 #! Arbitrary score_threshold used
-def find_similar_tickets(ticket: Ticket, score_threshold=0.5) -> List[Dict]:
+def find_similar_tickets(ticket: Ticket, score_threshold=0.75) -> List[Dict]:
     text_embedding = text_to_embedding(ticket)
     similar_tickets = qdrant_client.search(
         collection_name=QDRANT_COLLECTION_NAME,
