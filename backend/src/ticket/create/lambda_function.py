@@ -3,7 +3,9 @@ from openai import OpenAI
 import os
 from datetime import datetime
 from dotenv import load_dotenv
+import uuid
 from qdrant_client import QdrantClient, models
+
 load_dotenv()
 SYSTEM = ""
 OPENAI_API_KEY = os.environ['OPENAI_API_KEY']
@@ -82,7 +84,7 @@ def add_to_vectordb(tickets, collection_name, qdrant_client):
             collection_name=collection_name,
             points=[
                 models.PointStruct(
-                    id = idx,
+                    id =  str(generate_guid(ticket_data['ticket_text'])),
                     payload = {
                         "ticket_user_input": ticket_data['ticket_user_input'],
                         "ticket_text": ticket_data['ticket_text'],
@@ -96,3 +98,10 @@ def add_to_vectordb(tickets, collection_name, qdrant_client):
         results[ticket_user_input] = response
 
     return results
+
+def generate_guid(text):
+    class NULL_NAMESPACE:
+        bytes = b''
+
+    guid = uuid.uuid3(NULL_NAMESPACE, text.encode('utf-8'))
+    return guid
