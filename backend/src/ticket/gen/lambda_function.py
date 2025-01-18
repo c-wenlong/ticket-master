@@ -97,8 +97,6 @@ def lambda_handler(event, _context):
 
 
 def generate_tickets(ticket_desc: str):
-    response = {"master_ticket": None, "sub_tickets": []}
-
     generate_ticket_prompt = """
     You will be given a Software Engineering related ticket description.
     Please generate a master ticket based on the description.
