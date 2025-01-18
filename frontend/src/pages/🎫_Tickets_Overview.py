@@ -25,13 +25,10 @@ def main():
 
     # User context display
     with st.sidebar:
-        st.header("User Context")
-        # In a real app, these would come from authentication
-        st.session_state.curr_user = st.selectbox(
-            label="Current User",
-            options=[USER.name for USER in SAMPLE_USERS],
-            index=0,
-        )
+        st.header("Team Members")
+        team = [f"{USER.name}\n" for USER in SAMPLE_USERS]
+        team_string = "".join(team)
+        st.text(team_string)
         st.session_state.is_admin = st.checkbox("Is Admin", value=True)
 
         st.divider()
@@ -116,4 +113,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if st.session_state.curr_user:
+        main()
+    else:
+        st.error("Please authenticate first!")

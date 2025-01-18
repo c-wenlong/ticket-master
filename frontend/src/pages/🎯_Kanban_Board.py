@@ -86,9 +86,10 @@ def add_ticket():
                     st.error(f"An error occurred: {str(e)}")
 
 
-initialise_states()
-
-# Initialize and render Kanban board
-board = KanbanBoard(SAMPLE_TICKETS)
-board.render()
-add_ticket()
+if st.session_state.curr_user:
+    initialise_states()
+    board = KanbanBoard(SAMPLE_TICKETS)
+    board.render()
+    add_ticket()
+else:
+    st.error("Please authenticate first!")
