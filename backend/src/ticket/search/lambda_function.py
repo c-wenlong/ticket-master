@@ -21,8 +21,9 @@ qdrant_client = QdrantClient(
 
 def lambda_handler(event, context):
     body = json.loads(event['body'])
+    response = user_to_vectordb_prompt(body['user_ticket_text'])
 
-    results = fetch_similar_tickets(body['user_ticket_text'], QDRANT_COLLECTION_NAME, qdrant_client)
+    results = fetch_similar_tickets(response, QDRANT_COLLECTION_NAME, qdrant_client, 5)
     print(results)
     return {
         'statusCode': 200,
@@ -47,11 +48,14 @@ def text_to_embedding(text):
     return embeddings.data[0].embedding
 
 def fetch_similar_tickets(
-    text, collection_name, limit=5
+    text, collection_name, qdrant_client, limit=5
 ):
     text_embedding = text_to_embedding(text)
     similar_tickets = qdrant_client.search(
         collection_name=collection_name, query_vector=text_embedding, limit=limit
     )
-    return [ticket.payload["session_name"] for ticket in similar_tickets]
+    results = []
+    for ticket in similar_tickets:
+        results.append({"payload": ticket.payload, "score": ticket.score})
+    return results
 
