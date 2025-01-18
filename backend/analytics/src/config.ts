@@ -1,3 +1,7 @@
+import path from "path";
+import fs from "fs";
+import dotenv from "dotenv";
+
 export type AppConfig = {
   dbUserName: string;
   dbPassword: string;
@@ -8,9 +12,7 @@ export type AppConfig = {
 };
 
 export const loadConfig = async () => {
-  if (process.env.NODE_ENV !== "production") {
-    await loadDotenv();
-  }
+  await loadDotenv();
 
   const config: AppConfig = {
     dbUserName: process.env.DOCUMENTDB_USERNAME ?? "admin",
@@ -25,14 +27,17 @@ export const loadConfig = async () => {
 };
 
 const loadDotenv = async () => {
-  const path = await import("path");
-  const fs = await import("fs");
-  const dotenv = await import("dotenv");
-
-  const dotenvPath = path.resolve(__dirname, "../../../.env");
+  let dotenvPath = "";
+  if (process.env.NODE_ENV !== "production") {
+    dotenvPath = path.resolve(__dirname, "../../../.env");
+  } else {
+    dotenvPath = ".env";
+  }
 
   if (!fs.existsSync(dotenvPath)) {
-    console.warn("No .env file found in root of project directory, using default values");
+    console.warn(
+      "No .env file found in root of project directory, using default values",
+    );
     return;
   }
 
