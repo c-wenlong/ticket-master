@@ -7,7 +7,7 @@ import mongo from "@/db";
 import { setupRoutes } from "@/handler";
 import { errorMiddleware } from "@/middleware";
 
-const cfg = await loadConfig();
+const cfg = loadConfig();
 await mongo.MustInit(cfg);
 
 const app = new Hono();
