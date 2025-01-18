@@ -2,8 +2,8 @@ from typing import List
 from pydantic import BaseModel, RootModel, ValidationError
 import requests
 
-from frontend.src.entities.http import HttpResponse
-from frontend.src.entities.ticket import Ticket
+from entities.http import HttpResponse
+from entities.ticket import Ticket
 
 backend_base_url = "https://s618z67nt2.execute-api.ap-southeast-1.amazonaws.com"
 
@@ -31,7 +31,8 @@ def list_tickets():
     if not res.data:
         print("No ticket in response")
         return None
-
+    
+    print(res.data.root)
     return res.data.root
 
 

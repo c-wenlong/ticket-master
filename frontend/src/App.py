@@ -1,7 +1,6 @@
 import streamlit as st
 import time
 
-from frontend.src.services.ticket import list_tickets
 from utils import SAMPLE_TICKETS, SAMPLE_USERS, get_user, auth_user
 
 st.set_page_config(
@@ -17,7 +16,7 @@ curr_user = SAMPLE_USERS[0]
 
 def initialise_states():
     if "tickets" not in st.session_state:
-        st.session_state.tickets = list_tickets()
+        st.session_state.tickets = SAMPLE_TICKETS
     if "users" not in st.session_state:
         st.session_state.users = SAMPLE_USERS
     if "curr_user" not in st.session_state:
