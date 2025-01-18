@@ -101,6 +101,8 @@ def generate_tickets(ticket_desc: str):
     You will be given a Software Engineering related ticket description.
     Please generate a master ticket based on the description.
     If the ticket is too complex, you may create sub-tickets as well if needed.
+    Do not generate sub-tickets unnecessarily. Each ticket should minimumly take 1 man-day to complete.
+    i.e. tickets that can be completed in less than a day should not be split.
     
     The ticket should have a title, description, type, priority and status.
     The ticket title should be descriptive and be in title case.
