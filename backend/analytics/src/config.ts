@@ -1,7 +1,3 @@
-import dotenv from "dotenv";
-import fs from "fs";
-import path from "path";
-
 export type AppConfig = {
   dbUserName: string;
   dbPassword: string;
@@ -11,8 +7,12 @@ export type AppConfig = {
   devHttpPort: number;
 };
 
-export const loadConfig = () => {
-  loadDotenv();
+export const loadConfig = async () => {
+  if (process.env.NODE_ENV !== "production") {
+    await loadDotenv();
+  } else {
+    console.log("Running in production mode");
+  }
 
   const config: AppConfig = {
     dbUserName: process.env.DOCUMENTDB_USERNAME ?? "admin",
@@ -28,13 +28,12 @@ export const loadConfig = () => {
   return config;
 };
 
-const loadDotenv = () => {
-  let dotenvPath = "";
-  if (process.env.NODE_ENV !== "production") {
-    dotenvPath = path.resolve(__dirname, "../../../.env");
-  } else {
-    dotenvPath = path.resolve(process.cwd(), '.env')
-  }
+const loadDotenv = async () => {
+  const dotenv = await import("dotenv");
+  const fs = await import("fs");
+  const path = await import("path");
+  
+  const dotenvPath = path.resolve(__dirname, "../../../.env");
 
   if (!fs.existsSync(dotenvPath)) {
     console.warn(
