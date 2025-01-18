@@ -75,6 +75,7 @@ class KanbanBoard:
                 st.session_state.tickets[i] = updated_ticket
                 st.rerun()
 
+    # TODO: decide whether to implement delete or remove this functionality
     def delete_ticket(self, ticket_id: str):
         """Delete a ticket from the board."""
         # Find the ticket in the list
