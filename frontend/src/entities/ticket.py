@@ -26,6 +26,7 @@ class Priority(str, Enum):
 
 class Ticket(BaseModel):
     id: str = Field(
+        default="",
         description="Unique identifier for the ticket",
     )
     title: str = Field(
@@ -48,19 +49,21 @@ class Ticket(BaseModel):
     )
 
     # Assignment
-    assignee_id: Optional[str] = Field(default=None)
+    assignee_id: Optional[str] = Field(default="Unassigned")
     reporter_id: str = Field(
-        default_factory=lambda: st.session_state.curr_user.id,
+        default_factory=lambda: st.session_state.curr_user,
         description="User ID of the person who created the ticket",
     )
 
     # Timestamps
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+    created_at: Optional[datetime] = Field(
+        default=None,
+        # default_factory=lambda: datetime.now(timezone.utc),
         description="Timestamp when the ticket was created",
     )
-    updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+    updated_at: Optional[datetime] = Field(
+        default=None,
+        # default_factory=lambda: datetime.now(timezone.utc),
         description="Timestamp when the ticket was created",
     )
 

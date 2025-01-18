@@ -13,10 +13,11 @@ class KanbanBoard:
         self.columns = [
             status.value for status in Status
         ]  # ['Open', 'In Progress', 'Done']
+        st.session_state.tickets = tickets
 
-        # Initialize session state for tickets if not exists
-        if "tickets" not in st.session_state:
-            st.session_state.tickets = tickets
+        # # Initialize session state for tickets if not exists
+        # if "tickets" not in st.session_state:
+        #     st.session_state.tickets = tickets
 
         if "dragging" not in st.session_state:
             st.session_state.dragging = None

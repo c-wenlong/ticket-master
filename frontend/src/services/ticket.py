@@ -27,18 +27,32 @@ def list_tickets():
         print("Generate ticket failed: ", res)
         print(res.base.message)
         return None
-      
+
     if not res.data:
         print("No ticket in response")
         return None
-    
+
     print(res.data.root)
     return res.data.root
 
 
+# class GenTicketData(BaseModel):
+#     master_ticket: Ticket
+#     sub_tickets: list[Ticket]
+
+
+
+class SimilarTicket(BaseModel):
+    ticket: Ticket
+    score: float
+
+class MasterTicket(BaseModel):
+    ticket: Ticket
+    similar_tickets: list[SimilarTicket]
+
 class GenTicketData(BaseModel):
-    master_ticket: Ticket
-    sub_tickets: list[Ticket]
+    master_ticket: MasterTicket
+    sub_tickets: list[MasterTicket]
 
 
 def generate_ticket(ticket_desc: str, reporter_id: str, assignee_id: str):
@@ -65,13 +79,13 @@ def generate_ticket(ticket_desc: str, reporter_id: str, assignee_id: str):
         print("Generate ticket failed: ", res)
         print(res.base.message)
         return None
-    
+
     return res.data
 
 
 def create_ticket(ticket: Ticket):
     create_endpoint = f"{backend_base_url}/ticket/create"
-    response = requests.post(create_endpoint, json={"data": ticket})
+    response = requests.post(create_endpoint, json={"data": ticket.model_dump()})
     res = response.json()
 
     try:

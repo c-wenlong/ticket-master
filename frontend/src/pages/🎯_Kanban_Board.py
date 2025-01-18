@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 import time
+from typing import List
 
 from components import KanbanBoard
 from utils import SAMPLE_TICKETS, SAMPLE_USERS
@@ -8,6 +9,7 @@ from entities import User
 from components import create_ticket_form
 from services import text_to_ticket
 from entities import Ticket
+from services.ticket import list_tickets, generate_ticket, create_tickets, create_ticket
 
 
 st.set_page_config(
@@ -41,6 +43,9 @@ def add_ticket():
                 st.session_state.show_manual_form = False
                 st.rerun()
             create_ticket_form(st.session_state.curr_user)
+            # st.success("Ticket created successfully!")
+            # time.sleep(0.5)
+            # st.rerun()
 
     # TODO: this should be a submit form too
     # TODO: integration - after receiving payload (similar tickets) from frontend, decide whether to force insert tickets
@@ -57,23 +62,34 @@ def add_ticket():
             ticket_prompt = st.text_area("What would your ticket be?")
             if ticket_prompt:
                 try:
-                    ticket_str = text_to_ticket(ticket_prompt)
-                    st.markdown(f"```json\n{ticket_str}\n```")
-                    ticket = json.loads(ticket_str)
-                    ticket_entity = Ticket(
-                        title=ticket["title"],
-                        description=ticket["description"],
-                        assignee_id=ticket.get("assignee_id", None),
-                        status=ticket["status"],
-                        type=ticket["type"],
-                        priority=ticket["priority"],
-                        labels=ticket["labels"],
-                        embeddings=ticket.get("embeddings", None),
-                    )
-                    st.session_state.tickets.append(ticket_entity)
-                    st.success("Ticket created successfully!")
+                    gen_tickets = generate_ticket(ticket_prompt, st.session_state.curr_user, st.session_state.curr_user).model_dump()
+                    # st.error(gen_tickets)
+                    sub_tickets = gen_tickets["sub_tickets"]
+                    if len(sub_tickets) == 0:
+                        if len(gen_tickets["master_ticket"]['similar_tickets']) == 0:
+                            master_ticket = gen_tickets["master_ticket"]['ticket']
+                            created_ticket = create_ticket(master_ticket)
+                            st.session_state.tickets.append(created_ticket)
+                            st.success("Ticket created successfully!")
+                        else:
+                            st.error("Ticket not created. Duplicate detected.")
+                    else:
+                        extracted_sub_tickets = []
+                        for sub_ticket in sub_tickets:
+                            if len(sub_ticket['similar_tickets']) == 0:
+                                extracted_sub_tickets.append(sub_ticket['ticket'])
+                        # TODO: handle dupes based on similarity
+                        if len(extracted_sub_tickets) > 0:
+                            created_tickets = create_tickets(extracted_sub_tickets)
+                            for ticket_entity in created_tickets:
+                                st.session_state.tickets.append(ticket_entity)
+                            st.success("Ticket(s) created successfully!")
+                        else:
+                            st.error("Tickets not created. Duplicates detected.")
+
+
                     st.session_state.show_ai_form = False  # Auto-close after success
-                    time.sleep(0.5)  # Small delay to show the success message
+                    time.sleep(2)  # Small delay to show the success message
                     st.rerun()
                 # except KeyError:
                 #   st.error("Failed to create ticket. Please try again.")
@@ -84,7 +100,7 @@ def add_ticket():
 initialise_states()
 
 if st.session_state.curr_user:
-    board = KanbanBoard(SAMPLE_TICKETS)
+    board = KanbanBoard(list_tickets())
     board.render()
     add_ticket()
 else:
