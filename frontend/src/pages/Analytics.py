@@ -147,6 +147,13 @@ class ScrumDashboard:
         
         st.plotly_chart(fig, use_container_width=True)
 
+def initialize_session_state():
+    """Initialize session state variables"""
+    if "is_admin" not in st.session_state:
+        st.session_state.is_admin = True  # Default admin status for demo
+    if "curr_user" not in st.session_state:
+        st.session_state.curr_user = None
+        
 def main():
     tickets = get_sample_analytics()[0]
     events_by_ticket = group_events_by_tix(tickets)
@@ -248,5 +255,10 @@ def main():
         dashboard.cumulative_flow_diagram(cfd_data)
         dashboard.display_lead_time(lead_time_df)
 
+initialize_session_state()
+
 if __name__ == "__main__":
-    main()
+    if st.session_state.curr_user:
+        main()
+    else:
+        st.error("Please authenticate first!")
