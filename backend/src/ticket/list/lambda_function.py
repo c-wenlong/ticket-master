@@ -1,9 +1,7 @@
 import json
 import os
-from datetime import datetime
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
-from qdrant_client.http.models import PointStruct
 
 load_dotenv()
 
