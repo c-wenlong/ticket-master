@@ -17,13 +17,6 @@ st.set_page_config(
     page_icon="🎯",
 )
 
-curr_user = User(
-    id="USER-TESTING",
-    name="Chen Wenlong",
-    email="chenwenlong@u.nus.edu",
-    role="developer",
-)
-
 
 def initialise_states():
     if "show_manual_form" not in st.session_state:
@@ -31,7 +24,7 @@ def initialise_states():
     if "show_ai_form" not in st.session_state:
         st.session_state.show_ai_form = False
     if "curr_user" not in st.session_state:
-        st.session_state.curr_user = curr_user
+        st.session_state.curr_user = None
 
 
 def add_ticket():

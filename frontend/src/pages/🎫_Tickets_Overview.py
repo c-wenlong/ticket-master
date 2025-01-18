@@ -15,6 +15,8 @@ def initialize_session_state():
     """Initialize session state variables"""
     if "is_admin" not in st.session_state:
         st.session_state.is_admin = True  # Default admin status for demo
+    if "curr_user" not in st.session_state:
+        st.session_state.curr_user = None
 
 
 def main():
@@ -108,6 +110,7 @@ def main():
                 st.success("Changes saved!")
                 st.session_state.edited_values = {}
                 st.rerun()
+
 
 initialize_session_state()
 
