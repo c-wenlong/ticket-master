@@ -153,10 +153,14 @@ def text_to_embedding(ticket: Ticket):
     return embeddings.data[0].embedding
 
 
-def find_similar_tickets(ticket: Ticket) -> List[Dict]:
+#! Arbitrary score_threshold used
+def find_similar_tickets(ticket: Ticket, score_threshold=0.5) -> List[Dict]:
     text_embedding = text_to_embedding(ticket)
     similar_tickets = qdrant_client.search(
-        collection_name=QDRANT_COLLECTION_NAME, query_vector=text_embedding, limit=5
+        collection_name=QDRANT_COLLECTION_NAME,
+        query_vector=text_embedding,
+        limit=5,
+        score_threshold=score_threshold,
     )
 
     return [
