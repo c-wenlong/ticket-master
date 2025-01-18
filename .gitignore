@@ -7,3 +7,4 @@
 .sandbox/
 *.pem
 .streamlit/
+.vscode/
