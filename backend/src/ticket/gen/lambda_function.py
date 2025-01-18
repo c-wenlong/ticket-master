@@ -8,8 +8,6 @@ from dotenv import load_dotenv
 from openai.types.create_embedding_response import CreateEmbeddingResponse
 from qdrant_client import QdrantClient
 
-from frontend.src.entities import ticket
-
 load_dotenv()
 
 SYSTEM = ""
