@@ -11,8 +11,8 @@ export type AppConfig = {
   devHttpPort: number;
 };
 
-export const loadConfig = async () => {
-  await loadDotenv();
+export const loadConfig = () => {
+  loadDotenv();
 
   const config: AppConfig = {
     dbUserName: process.env.DOCUMENTDB_USERNAME ?? "admin",
@@ -28,7 +28,7 @@ export const loadConfig = async () => {
   return config;
 };
 
-const loadDotenv = async () => {
+const loadDotenv = () => {
   let dotenvPath = "";
   if (process.env.NODE_ENV !== "production") {
     dotenvPath = path.resolve(__dirname, "../../../.env");
