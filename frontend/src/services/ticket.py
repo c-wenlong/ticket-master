@@ -41,14 +41,18 @@ def list_tickets():
 #     sub_tickets: list[Ticket]
 
 
-
 class SimilarTicket(BaseModel):
     ticket: Ticket
     score: float
 
+class SimilarTicketArr(RootModel[list[SimilarTicket]]):
+    pass
+  
+  
 class MasterTicket(BaseModel):
     ticket: Ticket
     similar_tickets: list[SimilarTicket]
+
 
 class GenTicketData(BaseModel):
     master_ticket: MasterTicket
@@ -125,15 +129,42 @@ def create_tickets(tickets: List[Ticket]):
     return res.data.root
 
 
+def find_similar_tickets(ticket: Ticket):
+    create_endpoint = f"{backend_base_url}/ticket/find_similar"
+
+    ticket_model = ticket.model_dump()
+    ticket_model["created_at"] = None
+    ticket_model["updated_at"] = None
+    response = requests.post(create_endpoint, json={"data": ticket_model})
+    res = response.json()
+
+    try:
+        res = HttpResponse[SimilarTicketArr](**res)
+    except ValidationError as e:
+        print("Validate find similar ticket failed: ", e)
+        return None
+
+    if response.status_code != 200:
+        print("Find similar ticket failed: ", res)
+        print(res.base.message)
+        return None
+
+    if not res.data:
+        print("No ticket in response")
+        return None
+
+    return res.data.root
+
+
 def update_ticket(ticket: dict):
     update_endpoint = f"{backend_base_url}/ticket/update"
-    data = { "data": ticket}
+    data = {"data": ticket}
     print("[UPDATE ticket] data: ", data)
     response = requests.post(update_endpoint, json=data)
     res = response.json()
 
     try:
-        res = HttpResponse[Ticket](**res)
+        res = HttpResponse[SimilarTicket](**res)
     except ValidationError as e:
         print("Validate update ticket failed: ", e)
         return None

@@ -2,7 +2,7 @@ import streamlit as st
 from datetime import datetime, timezone
 from entities import Ticket, Type, Status, Priority
 import time
-from services.ticket import create_ticket
+from services.ticket import create_ticket, find_similar_tickets
 
 
 def fetch_assignees():  #!TODO ONCE ENDPOINT IS DONE TO FETCH USER DATA
@@ -115,6 +115,12 @@ def create_ticket_form(current_user_id: str) -> Ticket:
                     ],
                     # embedding=None,
                 )
+                similar_tickets = find_similar_tickets(new_ticket)
+                
+                if similar_tickets != None and len(similar_tickets) > 0:
+                    st.error("Ticket not created. Duplicate detected.")
+                    return None
+                
                 created_ticket = create_ticket(new_ticket)
                 st.session_state.tickets.append(created_ticket)
                 st.session_state.show_manual_form = (
