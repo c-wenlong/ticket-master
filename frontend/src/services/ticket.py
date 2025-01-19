@@ -125,9 +125,11 @@ def create_tickets(tickets: List[Ticket]):
     return res.data.root
 
 
-def update_ticket(ticket: Ticket):
+def update_ticket(ticket: dict):
     update_endpoint = f"{backend_base_url}/ticket/update"
-    response = requests.post(update_endpoint, json={"data": ticket})
+    data = { "data": ticket}
+    print("[UPDATE ticket] data: ", data)
+    response = requests.post(update_endpoint, json=data)
     res = response.json()
 
     try:

@@ -80,6 +80,7 @@ class Ticket(BaseModel):
 
     class Config:
         from_attributes = True
+        json_encoders = {datetime: lambda v: int(v.timestamp() * 1000) if v else None}
         json_schema_extra = {
             "example": {
                 "id": "TICK-123",
