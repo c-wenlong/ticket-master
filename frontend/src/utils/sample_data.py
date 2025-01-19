@@ -18,7 +18,7 @@ SAMPLE_USERS = [
         {
             "id": "USER-2",
             "name": "Avellin",
-            "email": "avellin@gmail.com",
+            "email": "avellin.wong@gmail.com",
             "username": "avellin",
             "role": "developer",
         },
