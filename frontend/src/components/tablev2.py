@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime, timezone
 from typing import List, Union, Dict
 from entities import Ticket, Type, Status, Priority
+from services.ticket import update_ticket
 
 
 def format_datetime(dt):
@@ -214,7 +215,17 @@ def ticket_table(tickets: List[Union[Dict, Ticket]]):
                                 None,
                             )
                             if ticket_index is not None:
-                                st.session_state.tickets[ticket_index] = updated_ticket
+                                t = (
+                                    updated_ticket
+                                    if isinstance(updated_ticket, dict)
+                                    else updated_ticket.model_dump()
+                                )
+                                t["created_at"] = None
+                                t["updated_at"] = None
+                                new_ticket = update_ticket(t)
+
+                                if new_ticket:
+                                    st.session_state.tickets[ticket_index] = new_ticket
 
                         st.success(f"Ticket {selected_ticket_id} updated successfully!")
                         st.rerun()
