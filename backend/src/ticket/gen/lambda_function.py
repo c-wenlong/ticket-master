@@ -136,7 +136,8 @@ def generate_tickets(ticket_desc: str):
       "id": "",
       "title": <str>,
       "description": <str>,
-      "type": <str>,D
+      "priority": <str>,
+      "type": <str>,
       "status": "open",
       "labels": [<str>, <str>, ...]
     }
