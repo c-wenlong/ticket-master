@@ -67,8 +67,9 @@ def add_ticket():
                     sub_tickets = gen_tickets["sub_tickets"]
                     if len(sub_tickets) == 0:
                         if len(gen_tickets["master_ticket"]['similar_tickets']) == 0:
-                            master_ticket = gen_tickets["master_ticket"]['ticket']
-                            created_ticket = create_ticket(master_ticket)
+                            extracted_master_ticket = []
+                            extracted_master_ticket.append(gen_tickets["master_ticket"]['ticket'])
+                            created_ticket = create_tickets(extracted_master_ticket)
                             st.session_state.tickets.append(created_ticket)
                             st.success("Ticket created successfully!")
                         else:
