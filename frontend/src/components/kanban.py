@@ -1,9 +1,10 @@
-from typing import List
+from typing import Dict, List
 import streamlit as st
 from datetime import datetime, timezone
 import time
 
 from entities import Ticket, Status, Priority, Type
+from services.ticket import update_ticket
 from .card import KanbanCard
 
 
@@ -13,10 +14,11 @@ class KanbanBoard:
         self.columns = [
             status.value for status in Status
         ]  # ['Open', 'In Progress', 'Done']
+        st.session_state.tickets = tickets
 
-        # Initialize session state for tickets if not exists
-        if "tickets" not in st.session_state:
-            st.session_state.tickets = tickets
+        # # Initialize session state for tickets if not exists
+        # if "tickets" not in st.session_state:
+        #     st.session_state.tickets = tickets
 
         if "dragging" not in st.session_state:
             st.session_state.dragging = None
@@ -30,10 +32,10 @@ class KanbanBoard:
     def create_ticket_card(self, ticket: Ticket, column):
         """Create a visual card for a ticket."""
         card = st.container()
-
         with card:
             # Convert ticket data to KanbanCard instance
             card = KanbanCard(
+                ticket=ticket,
                 ticket_id=ticket.id,
                 title=ticket.title,
                 description=ticket.description,
@@ -57,23 +59,27 @@ class KanbanBoard:
                 on_delete=self.delete_ticket,
             )
 
-    def move_ticket(self, ticket_id: str, new_status: str):
+    # TODO: call update from backend API
+    def move_ticket(self, target_ticket: Ticket, new_status: str):
         """Move a ticket to a new status column."""
         # Find the ticket by ID in the list
         for i, ticket in enumerate(st.session_state.tickets):
-            if ticket.id == ticket_id:
-                # Create a new Ticket object with updated status
-                updated_ticket = Ticket(
-                    **{
-                        **ticket.model_dump(),  # Convert existing ticket to dict and unpack
-                        "status": Status(new_status),  # Update status using Status enum
-                        "updated_at": datetime.now(timezone.utc),  # Update timestamp
-                    }
-                )
-                # Replace the old ticket with updated one
-                st.session_state.tickets[i] = updated_ticket
-                st.rerun()
+            if ticket.id == target_ticket.id:
+                target_ticket.status = Status(new_status)
+                target_ticket_json = target_ticket.model_dump()
+                target_ticket_json["created_at"] = None
+                target_ticket_json["updated_at"] = None
+                updated_ticket = update_ticket(target_ticket_json)
 
+                # Replace the old ticket with updated one
+                if update_ticket:
+                    st.session_state.tickets[i] = updated_ticket
+                    st.rerun()
+                    break
+                else:
+                    st.error(f"Failed to update ticket {target_ticket.id}")
+
+    # TODO: decide whether to implement delete or remove this functionality
     def delete_ticket(self, ticket_id: str):
         """Delete a ticket from the board."""
         # Find the ticket in the list

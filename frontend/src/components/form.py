@@ -2,6 +2,7 @@ import streamlit as st
 from datetime import datetime, timezone
 from entities import Ticket, Type, Status, Priority
 import time
+from services.ticket import create_ticket, find_similar_tickets
 
 
 def fetch_assignees():  #!TODO ONCE ENDPOINT IS DONE TO FETCH USER DATA
@@ -94,9 +95,11 @@ def create_ticket_form(current_user_id: str) -> Ticket:
                 st.error("Description cannot be empty!")
                 return None
 
-            current_time = datetime.now(timezone.utc)
+            current_time = str(time.mktime(datetime.now(timezone.utc).timetuple()))
+
 
             # Create ticket data matching Pydantic schema
+            # TODO: call backend API to create ticket
             try:
                 new_ticket = Ticket(
                     title=title.strip(),
@@ -106,20 +109,26 @@ def create_ticket_form(current_user_id: str) -> Ticket:
                     priority=Priority(priority),
                     assignee_id=assignee_id if assignee_id != "Unassigned" else None,
                     reporter_id=current_user_id,
-                    created_at=current_time,
-                    updated_at=current_time,
                     parent_ticket_id=parent_ticket_id.strip() or None,
                     labels=[
                         label.strip() for label in labels.split(",") if label.strip()
                     ],
-                    embedding=None,
+                    # embedding=None,
                 )
-                st.session_state.tickets.append(new_ticket)
-                st.session_state.show_form = (
+                similar_tickets = find_similar_tickets(new_ticket)
+                
+                if similar_tickets != None and len(similar_tickets) > 0:
+                    st.error("Ticket not created. Duplicate detected.")
+                    return None
+                
+                created_ticket = create_ticket(new_ticket)
+                st.session_state.tickets.append(created_ticket)
+                st.session_state.show_manual_form = (
                     False  # Hide form after successful submission
                 )
                 st.toast("Ticket created successfully!", icon="✅")
-                time.sleep(1)
+                # st.success("Ticket created successfully!")
+                time.sleep(2)
                 st.rerun()
             except Exception as e:
                 st.error(f"Failed to create ticket: {str(e)}")

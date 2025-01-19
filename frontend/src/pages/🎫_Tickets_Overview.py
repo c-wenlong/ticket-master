@@ -1,7 +1,7 @@
 import streamlit as st
 from components import ticket_table
 from utils import SAMPLE_TICKETS, SAMPLE_USERS
-
+from services.ticket import list_tickets
 
 st.set_page_config(
     page_title="Tickets Overview",
@@ -36,7 +36,7 @@ def main():
         st.write("Admin Status:", "✅" if st.session_state.is_admin else "❌")
 
     # Load sample data
-    tickets = SAMPLE_TICKETS
+    tickets = list_tickets()
 
     if not tickets:
         st.warning("No tickets found in sample data.")

@@ -1,0 +1,3 @@
+openai; python_version>"3.6"
+qdrant-client; python_version>"3.6"
+python-dotenv

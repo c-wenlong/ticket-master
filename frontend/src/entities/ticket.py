@@ -26,7 +26,7 @@ class Priority(str, Enum):
 
 class Ticket(BaseModel):
     id: str = Field(
-        default_factory=lambda: f"TICKET-{uuid4().hex[:8].upper()}",
+        default="",
         description="Unique identifier for the ticket",
     )
     title: str = Field(
@@ -49,19 +49,21 @@ class Ticket(BaseModel):
     )
 
     # Assignment
-    assignee_id: Optional[str] = Field(default=None)
+    assignee_id: Optional[str] = Field(default="Unassigned")
     reporter_id: str = Field(
-        default_factory=lambda: st.session_state.curr_user.id,
+        default_factory=lambda: st.session_state.curr_user,
         description="User ID of the person who created the ticket",
     )
 
     # Timestamps
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+    created_at: Optional[datetime] = Field(
+        default=None,
+        # default_factory=lambda: datetime.now(timezone.utc),
         description="Timestamp when the ticket was created",
     )
-    updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+    updated_at: Optional[datetime] = Field(
+        default=None,
+        # default_factory=lambda: datetime.now(timezone.utc),
         description="Timestamp when the ticket was created",
     )
 
@@ -78,6 +80,7 @@ class Ticket(BaseModel):
 
     class Config:
         from_attributes = True
+        json_encoders = {datetime: lambda v: int(v.timestamp() * 1000) if v else None}
         json_schema_extra = {
             "example": {
                 "id": "TICK-123",

@@ -1,10 +1,10 @@
 import streamlit as st
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional, Callable
+from typing import Dict, List, Optional, Callable
 from enum import Enum
 from entities import Priority
-
+from entities.ticket import Ticket
 
 @dataclass
 class CardStyle:
@@ -25,6 +25,7 @@ class CardStyle:
 class KanbanCard:
     def __init__(
         self,
+        ticket: Ticket,
         ticket_id: str,
         title: str,
         description: str,
@@ -39,6 +40,7 @@ class KanbanCard:
         parent_ticket_id: Optional[str] = None,
         embedding: Optional[List[float]] = None,
     ):
+        self.ticket = ticket
         self.id = ticket_id
         self.title = title
         self.description = description
@@ -58,6 +60,7 @@ class KanbanCard:
     def from_dict(cls, data: dict) -> "KanbanCard":
         """Create a KanbanCard instance from a dictionary"""
         return cls(
+            ticket=Ticket(**data),
             ticket_id=data["id"],
             title=data["title"],
             description=data["description"],
@@ -134,7 +137,7 @@ class KanbanCard:
         self,
         current_column: str,
         available_columns: List[str],
-        on_move: Callable[[str, str], None],
+        on_move: Callable[[Ticket, str], None],
         on_delete: Callable[[str], None],
     ) -> None:
         """
@@ -160,10 +163,10 @@ class KanbanCard:
             with move_col:
                 if current_col_idx > 0:
                     if st.button("⬅️", key=f"left_{self.id}"):
-                        on_move(self.id, available_columns[current_col_idx - 1])
+                        on_move(self.ticket, available_columns[current_col_idx - 1])
                 if current_col_idx < len(available_columns) - 1:
                     if st.button("➡️", key=f"right_{self.id}"):
-                        on_move(self.id, available_columns[current_col_idx + 1])
+                        on_move(self.ticket, available_columns[current_col_idx + 1])
                 if st.button("🗑️", key=f"delete_{self.id}"):
                     on_delete(self.id)
 
@@ -191,10 +194,10 @@ if __name__ == "__main__":
     columns = ["open", "in-progress", "done"]
 
     # Mock move callback
-    def on_move(ticket_id: str, new_status: str):
-        print(f"Moving ticket {ticket_id} to {new_status}")
+    def mocked_on_move(ticket: Ticket, new_status: str):
+        print(f"Moving ticket {ticket.id} to {new_status}")
 
     # Render card (in a Streamlit app)
     card.render(
-        current_column="in-progress", available_columns=columns, on_move=on_move
+        current_column="in-progress", available_columns=columns, on_move=mocked_on_move
     )
